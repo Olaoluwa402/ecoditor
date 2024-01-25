@@ -1,0 +1,14 @@
+{
+  "name": "veditor",
+  "version": "1.0.0",
+  "description": "a web-based code editor with support for Typescript and Python.",
+  "main": "server.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Olaoluwa IBUKUN",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
