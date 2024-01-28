@@ -1,0 +1,41 @@
+version: "3"
+
+services:
+  ecoditorbackend:
+    build: ./
+    container_name: ecoditorbackend
+    ports:
+      - "5000:5000"
+    env_file:
+      - ./.env
+    depends_on:
+      - pg-db
+
+  pg-db:
+    image: postgres:15.2-alpine3.17
+    container_name: pg-db
+    restart: always
+    ports:
+      - "5432:5432"
+    env_file:
+      - ./.env
+    environment:
+      - POSTGRES_USER=ecoditor
+      - POSTGRES_PASSWORD=123
+      - POSTGRES_DB=ecoditor
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+
+  nginx-proxy:
+    build:
+      dockerfile: Dockerfile
+      context: ./nginx
+    container_name: nginx-proxy
+    depends_on:
+      - ecoditorbackend
+    ports:
+      - 80:80
+
+volumes:
+  pg-data: {}
+   
