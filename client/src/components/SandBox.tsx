@@ -56,30 +56,32 @@ const SandBox: React.FC = () => {
     <div className="w-full">
       <div className="w-full ">
         <div className="w-full mx-auto ml-5">
-          <div className="w-full rounded-lg border border-gray-300  py-2 px-3">
-            <nav className="flex flex-wrap gap-4">
-              {tabs.map((tab) => (
-                <div
-                  key={tab.id}
-                  className={`tab ${
-                    activeTab === tab.id ? "bg-blue-300" : ""
-                  } w-[120px] border whitespace-nowrap inline-flex justify-between gap-3 rounded-lg py-2 px-3 text-sm font-medium text-gray-600 transition-all duration-200 ease-in-out hover:bg-gray-200 hover:text-gray-900`}
-                >
-                  <span
-                    onClick={() =>
-                      dispatch(openFileInEditor({ tabId: tab.id }))
-                    }
-                    className="cursor-pointer"
+          {tabs?.length > 0 && (
+            <div className="w-full rounded-lg border border-gray-300  py-2 px-3">
+              <nav className="flex flex-wrap gap-4">
+                {tabs.map((tab) => (
+                  <div
+                    key={tab.id}
+                    className={`tab ${
+                      activeTab === tab.id ? "bg-blue-300" : ""
+                    } w-[120px] border whitespace-nowrap inline-flex justify-between gap-3 rounded-lg py-2 px-3 text-sm font-medium text-gray-600 transition-all duration-200 ease-in-out hover:bg-gray-200 hover:text-gray-900`}
                   >
-                    {truncateText(tab.title, 10)}
-                  </span>
-                  <button onClick={() => dispatch(closeTab(tab.id))}>
-                    <MdClose />
-                  </button>
-                </div>
-              ))}
-            </nav>
-          </div>
+                    <span
+                      onClick={() =>
+                        dispatch(openFileInEditor({ tabId: tab.id }))
+                      }
+                      className="cursor-pointer"
+                    >
+                      {truncateText(tab.title, 10)}
+                    </span>
+                    <button onClick={() => dispatch(closeTab(tab.id))}>
+                      <MdClose />
+                    </button>
+                  </div>
+                ))}
+              </nav>
+            </div>
+          )}
         </div>
       </div>
       <div className="flex items-stretch p-5">

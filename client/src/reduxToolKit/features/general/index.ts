@@ -44,7 +44,7 @@ export const openTabAction =
     dispatch(openTab(newTab));
 
     dispatch(openFileInEditor({ tabId: newTab.id }));
-    toast.success("Tab opened successfully!");
+    //toast.success("Tab opened successfully!");
   };
 
 export const addFileToFolderUserCollectionAction =
@@ -52,33 +52,48 @@ export const addFileToFolderUserCollectionAction =
   (dispatch: AppDispatch, getState: any) => {
     const state = getState();
     const { userCollection } = state.generalState;
+
     const addFileToFolderUserCollection = (
-      folderName: string,
+      currentFolder: CollectionFolder,
       fileName: string,
       content?: string
-    ) => {
-      return userCollection.map((folder: CollectionFolder) => {
-        if (folder.name === folderName) {
+    ): CollectionFolder => {
+      // Check if the currentFolder is the target folder
+      if (currentFolder.name === folderName) {
+        // Check if the fileName already exists in the files array
+        const fileExists = currentFolder.files.some(
+          (file) => file.name === fileName
+        );
+
+        if (!fileExists) {
           return {
-            ...folder,
-            files: [...folder.files, { name: fileName, content }],
-          };
-        } else if (folder.folders) {
-          return {
-            ...folder,
-            folders: addFileToFolderUserCollection(
-              folderName,
-              fileName,
-              content
-            ),
+            ...currentFolder,
+            files: [...currentFolder.files, { name: fileName, content }],
           };
         }
-        return folder;
-      });
+      }
+
+      // If the currentFolder has sub-folders, apply the function recursively
+      if (currentFolder.folders && currentFolder.folders.length > 0) {
+        return {
+          ...currentFolder,
+          folders: currentFolder.folders.map((subFolder) =>
+            addFileToFolderUserCollection(subFolder, fileName, content)
+          ),
+        };
+      }
+
+      // If the currentFolder is not the target folder and has no sub-folders, return it unchanged
+      return currentFolder;
     };
 
-    const r = addFileToFolderUserCollection(folderName, fileName, content);
-    dispatch(addFileToUserCollection(r));
+    // Map over the userCollection to apply the addFileToFolderUserCollection function
+    const updatedUserCollection = userCollection.collections.map(
+      (folder: CollectionFolder) =>
+        addFileToFolderUserCollection(folder, fileName, content)
+    );
+
+    dispatch(addFileToUserCollection(updatedUserCollection));
   };
 
 // Action creator to add a file to the current tab and update tab title
@@ -107,7 +122,7 @@ export const addFileAction =
 
         dispatch(updateTab(updatedTab));
 
-        toast.success("File added successfully!");
+        //toast.success("File added successfully!");
       }
     }
   };
@@ -217,32 +232,32 @@ const UserCollection = {
     {
       name: "project 1",
       files: [
-        { name: "hello1.ts" },
-        { name: "hello0000000000000000000000000002.ts" },
+        // { name: "hello1.ts" },
+        // { name: "hello0000000000000000000000000002.ts" },
       ],
-      folders: [
-        {
-          name: "Subfolder 1",
-          files: [{ name: "hello3.py" }, { name: "hello4.py" }],
-          folders: [],
-        },
-      ],
+      // folders: [
+      //   {
+      //     name: "Subfolder 1",
+      //     files: [{ name: "hello3.py" }, { name: "hello4.py" }],
+      //     folders: [],
+      //   },
+      // ],
     },
-    {
-      name: "Project 2",
-      files: [{ name: "hello6.ts" }, { name: "hello7.py" }],
-      folders: [],
-    },
-    {
-      name: "Project 3",
-      files: [
-        { name: "hello8.ts" },
-        { name: "hello9.py" },
-        { name: "hello10.py" },
-        { name: "hello11.py" },
-      ],
-      folders: [],
-    },
+    // {
+    //   name: "Project 2",
+    //   files: [{ name: "hello6.ts" }, { name: "hello7.py" }],
+    //   folders: [],
+    // },
+    // {
+    //   name: "Project 3",
+    //   files: [
+    //     { name: "hello8.ts" },
+    //     { name: "hello9.py" },
+    //     { name: "hello10.py" },
+    //     { name: "hello11.py" },
+    //   ],
+    //   folders: [],
+    // },
   ],
 };
 

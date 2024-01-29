@@ -6,7 +6,10 @@ import { MdSend } from "react-icons/md";
 import { toast } from "react-toastify";
 import { addFileAction } from "../reduxToolKit/features/general";
 import { AppDispatch, RootState } from "../reduxToolKit/store";
-import { openTabAction } from "../reduxToolKit/features/general";
+import {
+  openTabAction,
+  addFileToFolderUserCollectionAction,
+} from "../reduxToolKit/features/general";
 import { truncateText } from "../util";
 
 interface File {
@@ -29,7 +32,7 @@ const FolderComponent: React.FC<FolderProps> = ({ folder, level = 0 }) => {
   // const { userCollection } = useSelector(
   //   (store: RootState) => store.generalState
   // );
-  // const [activeFolder, setActiveFolder] = useState("project 1");
+  //const [activeFolder, setActiveFolder] = useState("project 1");
   const [isOpen, setIsOpen] = useState(true);
 
   const handleToggle = () => {
@@ -57,24 +60,26 @@ const FolderComponent: React.FC<FolderProps> = ({ folder, level = 0 }) => {
       </h3>
       {isOpen && (
         <ul>
-          {folder.files.map((file, fileIndex) => (
-            <li key={fileIndex} className="flex items-center pl-4">
-              <BsFillFileEarmarkPlusFill size={16} className="mr-1" />
-              <span
-                className="cursor-pointer"
-                onClick={() => {
-                  dispatch(openTabAction(file.name, file.name));
-                }}
-              >
-                {truncateText(file.name, 10)}
-              </span>
-            </li>
-          ))}
-          {folder.folders.map((subFolder, subFolderIndex) => (
-            <li key={subFolderIndex}>
-              <FolderComponent folder={subFolder} level={level + 1} />
-            </li>
-          ))}
+          {folder.files?.length > 0 &&
+            folder.files.map((file, fileIndex) => (
+              <li key={fileIndex} className="flex items-center pl-4">
+                <BsFillFileEarmarkPlusFill size={16} className="mr-1" />
+                <span
+                  className="cursor-pointer"
+                  onClick={() => {
+                    dispatch(openTabAction(file.name, file.name));
+                  }}
+                >
+                  {truncateText(file.name, 10)}
+                </span>
+              </li>
+            ))}
+          {folder.folders?.length > 0 &&
+            folder.folders.map((subFolder, subFolderIndex) => (
+              <li key={subFolderIndex}>
+                <FolderComponent folder={subFolder} level={level + 1} />
+              </li>
+            ))}
         </ul>
       )}
     </div>
@@ -104,6 +109,7 @@ const FileExplorer: React.FC<FileExplorerProp> = ({
     const isValidFile = /\.(ts|py)$/.test(fileName);
     if (isValidFile) {
       dispatch(addFileAction(fileName));
+      dispatch(addFileToFolderUserCollectionAction("project 1", fileName));
       setShowOpenFile(false);
       setFileName("");
     } else {
@@ -114,9 +120,10 @@ const FileExplorer: React.FC<FileExplorerProp> = ({
   };
   return (
     <div className="bg-gray-800 text-white p-4">
-      {userCollection.collections.map((folder, index) => (
-        <FolderComponent key={index} folder={folder} />
-      ))}
+      {userCollection.collections?.length > 0 &&
+        userCollection.collections.map((folder, index) => (
+          <FolderComponent key={index} folder={folder} />
+        ))}
 
       {showOpenFile && (
         <div className="w-[100%] flex items-center my-2">

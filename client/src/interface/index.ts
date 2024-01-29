@@ -39,11 +39,12 @@ export enum ItemType {
 
 export interface CollectionFile {
   name: string;
+  content?: string;
 }
 
 export interface CollectionFolder {
   name: string;
-  files: CollectionFile[];
+  files: CollectionFile[] | [];
   folders: CollectionFolder[];
 }
 

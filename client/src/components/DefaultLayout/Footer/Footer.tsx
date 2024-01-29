@@ -29,7 +29,7 @@ const Footer: React.FC = () => {
         </Link>
       </nav>
       <p className="py-10 text-center text-gray-300">
-        © 2022 eCoditor | All Rights Reserved
+        © 2024 eCoditor | All Rights Reserved
       </p>
     </footer>
   );
