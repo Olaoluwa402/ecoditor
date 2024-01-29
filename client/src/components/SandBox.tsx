@@ -21,7 +21,6 @@ const SandBox: React.FC = () => {
 
   let name = "js";
   if (name === "py") {
-    //setModalIsOpen(false);
     setOutput(null);
   }
 
@@ -82,18 +81,6 @@ const SandBox: React.FC = () => {
             </nav>
           </div>
         </div>
-
-        {/* {tabs.map((tab) => (
-          <div
-            key={tab.id}
-            className={`tab ${activeTab === tab.id ? "active" : ""}`}
-            onClick={() => setActiveTab(tab.id)}
-          >
-            {tab.title}
-            <button onClick={() => closeTab(tab.id)}>X</button>
-          </div>
-        ))} */}
-        {/* <button onClick={openModal}>+</button> */}
       </div>
       <div className="flex items-stretch p-5">
         <div className="flex-1">
@@ -126,35 +113,6 @@ const SandBox: React.FC = () => {
           {output && <div className="">{output}</div>}
         </div>
       </div>
-
-      {/* Modal for creating a new file */}
-      {/* <Modal
-        isOpen={modalIsOpen}
-        onRequestClose={closeModal}
-        contentLabel="New File Modal"
-      >
-        <h2>Create a New File</h2>
-        <label>
-          File Name:
-          <input
-            type="text"
-            value={newFileName}
-            onChange={(e) => setNewFileName(e.target.value)}
-          />
-        </label>
-        <label>
-          Extension:
-          <select
-            value={newFileExtension}
-            onChange={(e) => setNewFileExtension(e.target.value)}
-          >
-            <option value=".js">.js</option>
-            <option value=".ts">.ts</option>
-            
-          </select>
-        </label>
-        <button onClick={createNewFile}>Create</button>
-      </Modal> */}
     </div>
   );
 };

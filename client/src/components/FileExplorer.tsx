@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import { BsFillFileEarmarkPlusFill } from "react-icons/bs";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { FaFolderPlus, FaFolderMinus } from "react-icons/fa6";
 import { MdSend } from "react-icons/md";
 import { toast } from "react-toastify";
 import { addFileAction } from "../reduxToolKit/features/general";
-import { AppDispatch } from "../reduxToolKit/store";
+import { AppDispatch, RootState } from "../reduxToolKit/store";
 import { openTabAction } from "../reduxToolKit/features/general";
 import { truncateText } from "../util";
 
@@ -26,11 +26,19 @@ interface FolderProps {
 
 const FolderComponent: React.FC<FolderProps> = ({ folder, level = 0 }) => {
   const dispatch = useDispatch<AppDispatch>();
+  // const { userCollection } = useSelector(
+  //   (store: RootState) => store.generalState
+  // );
+  // const [activeFolder, setActiveFolder] = useState("project 1");
   const [isOpen, setIsOpen] = useState(true);
 
   const handleToggle = () => {
     setIsOpen(!isOpen);
   };
+
+  // const folderClickHandler = (folderName: string) => {
+  //   setActiveFolder(folderName);
+  // };
 
   return (
     <div className={`pl-${level * 4} py-2`}>
@@ -54,7 +62,9 @@ const FolderComponent: React.FC<FolderProps> = ({ folder, level = 0 }) => {
               <BsFillFileEarmarkPlusFill size={16} className="mr-1" />
               <span
                 className="cursor-pointer"
-                onClick={() => dispatch(openTabAction(file.name, file.name))}
+                onClick={() => {
+                  dispatch(openTabAction(file.name, file.name));
+                }}
               >
                 {truncateText(file.name, 10)}
               </span>
@@ -80,42 +90,10 @@ const FileExplorer: React.FC<FileExplorerProp> = ({
   setShowOpenFile,
 }) => {
   const dispatch = useDispatch<AppDispatch>();
+  const { userCollection } = useSelector(
+    (store: RootState) => store.generalState
+  );
   const [fileName, setFileName] = useState("");
-  const [folders, setFolders] = useState<Folder[]>([
-    {
-      name: "Folder 1",
-      files: [
-        { name: "hello1.ts" },
-        { name: "hello0000000000000000000000000002.ts" },
-      ],
-      folders: [
-        {
-          name: "Subfolder 1",
-          files: [{ name: "hello3.py" }, { name: "hello4.py" }],
-          folders: [],
-        },
-      ],
-    },
-    {
-      name: "Folder 2",
-      files: [{ name: "hello6.ts" }, { name: "hello7.py" }],
-      folders: [],
-    },
-    {
-      name: "Folder 3",
-      files: [
-        { name: "hello8.ts" },
-        { name: "hello9.py" },
-        { name: "hello10.py" },
-        { name: "hello11.py" },
-      ],
-      folders: [],
-    },
-  ]);
-  let name = "js";
-  if (name === "py") {
-    setFolders([]);
-  }
 
   const submitHandler = () => {
     if (!fileName) {
@@ -136,7 +114,7 @@ const FileExplorer: React.FC<FileExplorerProp> = ({
   };
   return (
     <div className="bg-gray-800 text-white p-4">
-      {folders.map((folder, index) => (
+      {userCollection.collections.map((folder, index) => (
         <FolderComponent key={index} folder={folder} />
       ))}
 

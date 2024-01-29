@@ -37,9 +37,22 @@ export enum ItemType {
   Folder = "folder",
 }
 
+export interface CollectionFile {
+  name: string;
+}
+
+export interface CollectionFolder {
+  name: string;
+  files: CollectionFile[];
+  folders: CollectionFolder[];
+}
+
 export interface GeneralState {
   tabs: Tab[];
   modalIsOpen: boolean;
   activeTab: number | null;
   newFileName: string;
+  userCollection: {
+    collections: CollectionFolder[];
+  };
 }

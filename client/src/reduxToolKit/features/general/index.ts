@@ -1,6 +1,12 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { toast } from "react-toastify";
-import { Tab, File, Folder, GeneralState } from "../../../interface";
+import {
+  Tab,
+  File,
+  Folder,
+  GeneralState,
+  CollectionFolder,
+} from "../../../interface";
 import { AppDispatch } from "../../store";
 import { getLanguage } from "../../../util";
 
@@ -39,6 +45,40 @@ export const openTabAction =
 
     dispatch(openFileInEditor({ tabId: newTab.id }));
     toast.success("Tab opened successfully!");
+  };
+
+export const addFileToFolderUserCollectionAction =
+  (folderName: string, fileName: string, content?: string) =>
+  (dispatch: AppDispatch, getState: any) => {
+    const state = getState();
+    const { userCollection } = state.generalState;
+    const addFileToFolderUserCollection = (
+      folderName: string,
+      fileName: string,
+      content?: string
+    ) => {
+      return userCollection.map((folder: CollectionFolder) => {
+        if (folder.name === folderName) {
+          return {
+            ...folder,
+            files: [...folder.files, { name: fileName, content }],
+          };
+        } else if (folder.folders) {
+          return {
+            ...folder,
+            folders: addFileToFolderUserCollection(
+              folderName,
+              fileName,
+              content
+            ),
+          };
+        }
+        return folder;
+      });
+    };
+
+    const r = addFileToFolderUserCollection(folderName, fileName, content);
+    dispatch(addFileToUserCollection(r));
   };
 
 // Action creator to add a file to the current tab and update tab title
@@ -172,6 +212,40 @@ export const updateTabAction = (tab: Tab) => (dispatch: any) => {
   toast.success("Tab updated successfully!");
 };
 
+const UserCollection = {
+  collections: [
+    {
+      name: "project 1",
+      files: [
+        { name: "hello1.ts" },
+        { name: "hello0000000000000000000000000002.ts" },
+      ],
+      folders: [
+        {
+          name: "Subfolder 1",
+          files: [{ name: "hello3.py" }, { name: "hello4.py" }],
+          folders: [],
+        },
+      ],
+    },
+    {
+      name: "Project 2",
+      files: [{ name: "hello6.ts" }, { name: "hello7.py" }],
+      folders: [],
+    },
+    {
+      name: "Project 3",
+      files: [
+        { name: "hello8.ts" },
+        { name: "hello9.py" },
+        { name: "hello10.py" },
+        { name: "hello11.py" },
+      ],
+      folders: [],
+    },
+  ],
+};
+
 export const generalSlice = createSlice({
   name: "general",
   initialState: {
@@ -186,6 +260,7 @@ export const generalSlice = createSlice({
     modalIsOpen: false,
     activeTab: 1,
     newFileName: "",
+    userCollection: UserCollection,
   } as GeneralState,
   reducers: {
     openTab: (state, action: PayloadAction<Tab>) => {
@@ -207,6 +282,14 @@ export const generalSlice = createSlice({
         state.tabs[index] = action.payload;
       }
     },
+
+    addFileToUserCollection: (
+      state,
+      action: PayloadAction<CollectionFolder[]>
+    ) => {
+      state.userCollection.collections = action.payload;
+    },
+
     openFileInEditor: (state, action: PayloadAction<{ tabId: number }>) => {
       console.log(action.payload.tabId, "tabId");
       state.activeTab = action.payload.tabId;
@@ -217,7 +300,12 @@ export const generalSlice = createSlice({
   // },
 });
 
-export const { openTab, closeTab, updateTab, openFileInEditor } =
-  generalSlice.actions;
+export const {
+  openTab,
+  closeTab,
+  updateTab,
+  openFileInEditor,
+  addFileToUserCollection,
+} = generalSlice.actions;
 
 export default generalSlice.reducer;
