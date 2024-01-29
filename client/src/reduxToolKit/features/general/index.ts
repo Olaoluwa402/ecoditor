@@ -5,17 +5,29 @@ import { AppDispatch } from "../../store";
 import { getLanguage } from "../../../util";
 
 export const openTabAction =
-  (newFileName: string) => (dispatch: AppDispatch, getState: any) => {
+  (newFileName: string, content: any) =>
+  (dispatch: AppDispatch, getState: any) => {
     const state = getState();
-    const { tabs } = state.general;
+    const { tabs } = state.generalState;
 
-    const newTab: Tab = {
-      id: Date.now(),
-      title: newFileName || `Tab ${tabs.length + 1}`,
-      folderStructure: [],
-      file: undefined,
+    const newFile: File = {
+      [newFileName]: {
+        name: newFileName,
+        content: content || "",
+        language: getLanguage(newFileName),
+      },
     };
 
+    const newTab: Tab = {
+      id: tabs.length + 1,
+      title: newFileName,
+      folderStructure: [],
+      file: newFile,
+    };
+    if (tabs.length >= 10) {
+      toast.warn("You can only open maximum of 10 tabs concurrently");
+      return;
+    }
     dispatch(openTab(newTab));
     toast.success("Tab opened successfully!");
   };
@@ -170,6 +182,14 @@ export const generalSlice = createSlice({
       state.tabs = [...state.tabs, action.payload];
       state.activeTab = action.payload.id;
     },
+    closeTab: (state, action: PayloadAction<number>) => {
+      // Close the tab with the given ID
+      state.tabs = state.tabs.filter((tab) => tab.id !== action.payload);
+      // If the closed tab was the active one, set activeTab to null or choose a new active tab
+      if (state.activeTab === action.payload) {
+        state.activeTab = state.tabs.length > 0 ? state.tabs[0].id : null;
+      }
+    },
     updateTab: (state, action: PayloadAction<Tab>) => {
       const index = state.tabs.findIndex((tab) => tab.id === action.payload.id);
       if (index !== -1) {
@@ -185,6 +205,6 @@ export const generalSlice = createSlice({
   // },
 });
 
-export const { openTab, updateTab } = generalSlice.actions;
+export const { openTab, closeTab, updateTab } = generalSlice.actions;
 
 export default generalSlice.reducer;

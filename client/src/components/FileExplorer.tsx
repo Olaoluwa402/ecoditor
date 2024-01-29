@@ -6,6 +6,8 @@ import { MdSend } from "react-icons/md";
 import { toast } from "react-toastify";
 import { addFileAction } from "../reduxToolKit/features/general";
 import { AppDispatch } from "../reduxToolKit/store";
+import { openTabAction } from "../reduxToolKit/features/general";
+import { truncateText } from "../util";
 
 interface File {
   name: string;
@@ -23,6 +25,7 @@ interface FolderProps {
 }
 
 const FolderComponent: React.FC<FolderProps> = ({ folder, level = 0 }) => {
+  const dispatch = useDispatch<AppDispatch>();
   const [isOpen, setIsOpen] = useState(true);
 
   const handleToggle = () => {
@@ -41,7 +44,7 @@ const FolderComponent: React.FC<FolderProps> = ({ folder, level = 0 }) => {
           ) : (
             <FaFolderPlus size={16} className="mr-1" />
           )}
-          <span>{folder.name}</span>
+          <span>{truncateText(folder.name, 10)}</span>
         </div>
       </h3>
       {isOpen && (
@@ -49,7 +52,12 @@ const FolderComponent: React.FC<FolderProps> = ({ folder, level = 0 }) => {
           {folder.files.map((file, fileIndex) => (
             <li key={fileIndex} className="flex items-center pl-4">
               <BsFillFileEarmarkPlusFill size={16} className="mr-1" />
-              <span>{file.name}</span>
+              <span
+                className="cursor-pointer"
+                onClick={() => dispatch(openTabAction(file.name, file.name))}
+              >
+                {truncateText(file.name, 10)}
+              </span>
             </li>
           ))}
           {folder.folders.map((subFolder, subFolderIndex) => (
@@ -76,18 +84,31 @@ const FileExplorer: React.FC<FileExplorerProp> = ({
   const [folders, setFolders] = useState<Folder[]>([
     {
       name: "Folder 1",
-      files: [{ name: "File 1" }, { name: "File 2" }],
+      files: [
+        { name: "hello1.ts" },
+        { name: "hello0000000000000000000000000002.ts" },
+      ],
       folders: [
         {
           name: "Subfolder 1",
-          files: [{ name: "File 3" }, { name: "File 4" }],
+          files: [{ name: "hello3.py" }, { name: "hello4.py" }],
           folders: [],
         },
       ],
     },
     {
       name: "Folder 2",
-      files: [{ name: "File 5" }, { name: "File 6" }],
+      files: [{ name: "hello6.ts" }, { name: "hello7.py" }],
+      folders: [],
+    },
+    {
+      name: "Folder 3",
+      files: [
+        { name: "hello8.ts" },
+        { name: "hello9.py" },
+        { name: "hello10.py" },
+        { name: "hello11.py" },
+      ],
       folders: [],
     },
   ]);

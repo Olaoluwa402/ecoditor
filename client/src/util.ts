@@ -22,3 +22,10 @@ export const getLanguage = (fileName?: string) => {
   // Default to TypeScript if no valid file extension is found
   return "typescript";
 };
+
+export const truncateText = (text: string, num: number) => {
+  if (text.length > num) {
+    return text.substring(0, num) + "...";
+  }
+  return text;
+};

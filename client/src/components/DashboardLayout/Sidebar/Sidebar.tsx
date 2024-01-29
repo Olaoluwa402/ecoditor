@@ -7,6 +7,7 @@ import { AppDispatch, RootState } from "../../../reduxToolKit/store";
 import { BsFillFileEarmarkPlusFill } from "react-icons/bs";
 import { FaFolderPlus } from "react-icons/fa6";
 import FileExplorer from "../../FileExplorer";
+
 const Sidebar: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();

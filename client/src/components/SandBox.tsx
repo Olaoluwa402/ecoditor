@@ -5,6 +5,11 @@ import CodeEditor from "./CodeEditor";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import { RootState } from "../reduxToolKit/store";
+import { closeTab } from "../reduxToolKit/features/general";
+import { MdClose } from "react-icons/md";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "../reduxToolKit/store";
+import { truncateText } from "../util";
 
 // interface Tab {
 //   id: number;
@@ -12,6 +17,7 @@ import { RootState } from "../reduxToolKit/store";
 // }
 
 const SandBox: React.FC = () => {
+  const dispatch = useDispatch<AppDispatch>();
   const { tabs } = useSelector((store: RootState) => store.generalState);
   // const [modalIsOpen, setModalIsOpen] = useState(false);
   //const [newFileName, setNewFileName] = useState<string>("");
@@ -37,12 +43,6 @@ const SandBox: React.FC = () => {
   //   // setNewFileName(""); // Reset newFileName after creating a new tab
   //   // setNewFileExtension(".js"); // Reset newFileExtension after creating a new tab
   // };
-
-  const closeTab = (id: number) => {
-    console.log(id);
-    //setTabs(tabs.filter((tab) => tab.id !== id));
-    // setActiveTab(null);
-  };
 
   // const openModal = () => {
   //   // setModalIsOpen(true);
@@ -94,11 +94,17 @@ const SandBox: React.FC = () => {
                   key={tab.id}
                   className={`tab ${
                     activeTab === tab.id ? "active" : ""
-                  } w-[90px] border cursor-pointer whitespace-nowrap inline-flex justify-between rounded-lg py-2 px-3 text-sm font-medium text-gray-600 transition-all duration-200 ease-in-out hover:bg-gray-200 hover:text-gray-900`}
-                  onClick={() => setActiveTab(tab.id)}
+                  } w-[120px] border whitespace-nowrap inline-flex justify-between gap-3 rounded-lg py-2 px-3 text-sm font-medium text-gray-600 transition-all duration-200 ease-in-out hover:bg-gray-200 hover:text-gray-900`}
                 >
-                  <span>{tab.title}</span>
-                  <button onClick={() => closeTab(tab.id)}>X</button>
+                  <span
+                    onClick={() => setActiveTab(tab.id)}
+                    className="cursor-pointer"
+                  >
+                    {truncateText(tab.title, 10)}
+                  </span>
+                  <button onClick={() => dispatch(closeTab(tab.id))}>
+                    <MdClose />
+                  </button>
                 </div>
               ))}
             </nav>
