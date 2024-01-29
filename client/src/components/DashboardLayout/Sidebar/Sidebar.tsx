@@ -28,13 +28,18 @@ const Sidebar: React.FC = () => {
           >
             eEDITOR
           </h1>
-          <div className="h-[30px] w-[100%] flex justify-end gap-2 mt-10 px-5">
-            <BsFillFileEarmarkPlusFill
-              onClick={() => setShowOpenFile((prev) => !prev)}
-              size={20}
-              className="cursor-pointer"
-            />
-            <FaFolderPlus size={20} className="cursor-pointer" />
+          <div className="h-[30px] w-[100%] flex justify-between items-center gap-2 mt-10 mb-2 px-5">
+            <div>
+              <button className="bg-blue-500 p-1 rounded">New Project</button>
+            </div>
+            <div className="flex gap-2">
+              <BsFillFileEarmarkPlusFill
+                onClick={() => setShowOpenFile((prev) => !prev)}
+                size={20}
+                className="cursor-pointer"
+              />
+              <FaFolderPlus size={20} className="cursor-pointer" />
+            </div>
           </div>
 
           <FileExplorer

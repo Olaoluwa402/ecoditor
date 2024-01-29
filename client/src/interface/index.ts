@@ -5,9 +5,24 @@ export interface Tab {
   folderStructure: Folder[];
 }
 
-export interface File {
+interface Language {
+  code: string;
   name: string;
-  content: string; // Assuming there is content associated with each file
+}
+
+export const supportedLanguages: Language[] = [
+  { code: "ts", name: "typescript" },
+  { code: "py", name: "python" },
+];
+
+interface FileInfo {
+  name: string;
+  content: string;
+  language: string;
+}
+
+export interface File {
+  [fileName: string]: FileInfo;
 }
 
 export interface Folder {

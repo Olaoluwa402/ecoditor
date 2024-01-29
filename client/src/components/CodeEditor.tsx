@@ -1,26 +1,26 @@
 // CodeEditor.tsx
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 //import MonacoEditor, { MonacoEditorProps } from "react-monaco-editor";
 import Editor from "@monaco-editor/react";
 
 interface CodeEditorProps {
   fileName: string;
-  extension: string;
   isActive: boolean;
+  code: any;
+  language: string;
   // executeCode: () => void;
   // onChange: (newValue: string) => void;
 }
 
 const CodeEditor: React.FC<CodeEditorProps> = ({
   fileName,
-  extension,
   isActive,
+  code,
+  language = "python",
   // executeCode,
   // onChange,
   // ...rest
 }) => {
-  const [code] = useState("");
-
   // const editorDidMount = (editor: any, monaco: any) => {
   //   console.log(editor, monaco, "Editor mounted");
   // };
@@ -36,7 +36,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
       // Clean up the timeout when the component is unmounted or isActive changes
       return () => clearTimeout(timeoutId);
     }
-  }, [isActive, fileName, extension]);
+  }, [isActive, fileName]);
 
   return (
     <div style={{ display: true ? "flex" : "none" }} className="w-full h-full">
@@ -46,7 +46,8 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
           width="100%"
           value={code}
           theme="vs-dark"
-          language="javascript"
+          language={language}
+          defaultLanguage="typescript"
         />
       </div>
       {/* <MonacoEditor

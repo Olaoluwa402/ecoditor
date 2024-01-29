@@ -2,6 +2,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { toast } from "react-toastify";
 import { Tab, File, Folder, GeneralState } from "../../../interface";
 import { AppDispatch } from "../../store";
+import { getLanguage } from "../../../util";
 
 export const openTabAction =
   (newFileName: string) => (dispatch: AppDispatch, getState: any) => {
@@ -30,8 +31,11 @@ export const addFileAction =
 
       if (currentTab) {
         const newFile: File = {
-          name: itemName,
-          content: content || "",
+          [itemName]: {
+            name: itemName,
+            content: content || "",
+            language: getLanguage(itemName),
+          },
         };
 
         const updatedTab = {
@@ -88,8 +92,11 @@ export const addFileToFolderAction =
 
         if (folderIndex !== -1) {
           const newFile: File = {
-            name: itemName,
-            content: content || "",
+            [itemName]: {
+              name: itemName,
+              content: content || "",
+              language: getLanguage(itemName),
+            },
           };
 
           const updatedFolder = {
@@ -149,7 +156,7 @@ export const generalSlice = createSlice({
     tabs: [
       {
         id: 1,
-        title: "Tab 1",
+        title: "untitled",
         folderStructure: [] as Folder[],
         file: undefined,
       },

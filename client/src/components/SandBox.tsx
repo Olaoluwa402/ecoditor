@@ -23,6 +23,7 @@ const SandBox: React.FC = () => {
   if (name === "py") {
     //setModalIsOpen(false);
     setOutput(null);
+    newFileExtension;
     setNewFileExtension("");
   }
   // const addTab = () => {
@@ -121,9 +122,12 @@ const SandBox: React.FC = () => {
           {tabs.map((tab) => (
             <div key={tab.id} className="w-full h-[100vh]">
               <CodeEditor
-                fileName={tab.title}
-                extension={newFileExtension}
+                fileName={Object.keys(tab.file || {})[0] || "Untitled"}
                 isActive={activeTab === tab.id}
+                code={Object.values(tab.file || {})[0]?.content || ""}
+                language={
+                  Object.values(tab.file || {})[0]?.language || "typescript"
+                }
                 // executeCode={executeCode}
                 // onChange={() => {}}
               />
