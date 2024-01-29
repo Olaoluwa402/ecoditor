@@ -41,6 +41,8 @@ Follow these steps to run the application using Docker Compose:
 
    Once the containers are up and running, you can access the application in your web browser at http://localhost:5000.
 
+   http://localhost:5000/docs for docs
+
 # Option 2
 
 ### Prerequisites
