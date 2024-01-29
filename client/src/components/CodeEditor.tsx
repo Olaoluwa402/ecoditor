@@ -17,9 +17,6 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
   isActive,
   code,
   language = "python",
-  // executeCode,
-  // onChange,
-  // ...rest
 }) => {
   // const editorDidMount = (editor: any, monaco: any) => {
   //   console.log(editor, monaco, "Editor mounted");

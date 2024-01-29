@@ -24,11 +24,20 @@ export const openTabAction =
       folderStructure: [],
       file: newFile,
     };
+
+    //prevent adding tab that is already in tab list
+    const exist = tabs.find((tab: Tab) => tab.title == newFileName);
+    console.log(exist, "exist");
+    if (exist) {
+      return;
+    }
     if (tabs.length >= 10) {
       toast.warn("You can only open maximum of 10 tabs concurrently");
       return;
     }
     dispatch(openTab(newTab));
+
+    dispatch(openFileInEditor({ tabId: newTab.id }));
     toast.success("Tab opened successfully!");
   };
 
@@ -57,6 +66,7 @@ export const addFileAction =
         };
 
         dispatch(updateTab(updatedTab));
+
         toast.success("File added successfully!");
       }
     }
@@ -190,6 +200,7 @@ export const generalSlice = createSlice({
         state.activeTab = state.tabs.length > 0 ? state.tabs[0].id : null;
       }
     },
+
     updateTab: (state, action: PayloadAction<Tab>) => {
       const index = state.tabs.findIndex((tab) => tab.id === action.payload.id);
       if (index !== -1) {
@@ -197,6 +208,7 @@ export const generalSlice = createSlice({
       }
     },
     openFileInEditor: (state, action: PayloadAction<{ tabId: number }>) => {
+      console.log(action.payload.tabId, "tabId");
       state.activeTab = action.payload.tabId;
     },
   },
@@ -205,6 +217,7 @@ export const generalSlice = createSlice({
   // },
 });
 
-export const { openTab, closeTab, updateTab } = generalSlice.actions;
+export const { openTab, closeTab, updateTab, openFileInEditor } =
+  generalSlice.actions;
 
 export default generalSlice.reducer;
