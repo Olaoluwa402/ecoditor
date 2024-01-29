@@ -11,6 +11,7 @@ export interface File {
 }
 
 export interface Folder {
+  id: number;
   name: string;
   files: File[];
   folders: Folder[];

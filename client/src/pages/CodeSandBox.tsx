@@ -1,10 +1,10 @@
 import React from "react";
-import TabBar from "../components/SandBox";
+import SandBox from "../components/SandBox";
 
 const CodeSandBox: React.FC = () => {
   return (
-    <div>
-      <TabBar />
+    <div className="w-[85%]">
+      <SandBox />
     </div>
   );
 };

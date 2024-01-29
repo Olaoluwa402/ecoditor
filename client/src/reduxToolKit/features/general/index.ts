@@ -1,10 +1,10 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { toast } from "react-toastify";
 import { Tab, File, Folder, GeneralState } from "../../../interface";
+import { AppDispatch } from "../../store";
 
-// Action creator to open a new tab
 export const openTabAction =
-  (newFileName: string) => (dispatch: any, getState: any) => {
+  (newFileName: string) => (dispatch: AppDispatch, getState: any) => {
     const state = getState();
     const { tabs } = state.general;
 
@@ -19,11 +19,10 @@ export const openTabAction =
     toast.success("Tab opened successfully!");
   };
 
-// Action creator to add a file to the current tab
+// Action creator to add a file to the current tab and update tab title
 export const addFileAction =
   (itemName: string, content?: string) => (dispatch: any, getState: any) => {
     const state = getState();
-    console.log(state, "state");
     const { tabs, activeTab } = state.generalState;
 
     if (activeTab !== null) {
@@ -35,9 +34,80 @@ export const addFileAction =
           content: content || "",
         };
 
-        currentTab.file = newFile;
-        dispatch(updateTab(currentTab));
+        const updatedTab = {
+          ...currentTab,
+          file: newFile,
+          title: itemName,
+        };
+
+        dispatch(updateTab(updatedTab));
         toast.success("File added successfully!");
+      }
+    }
+  };
+
+export const openFileInEditorAction = (file: File) => (dispatch: any) => {
+  //@ts-ignore
+  dispatch(openFileInEditor(file));
+  toast.success("File opened in editor!");
+};
+
+export const editFileContentAction =
+  (content: string) => (dispatch: any, getState: any) => {
+    const state = getState();
+    const { activeTab } = state.general;
+
+    if (activeTab !== null) {
+      const currentTab = state.general.tabs.find(
+        (tab: Tab) => tab.id === activeTab
+      );
+
+      if (currentTab && currentTab.file) {
+        const updatedFile = { ...currentTab.file, content };
+        const updatedTab = { ...currentTab, file: updatedFile };
+
+        dispatch(updateTab(updatedTab));
+        toast.success("File content edited!");
+      }
+    }
+  };
+
+export const addFileToFolderAction =
+  (folderId: number, itemName: string, content?: string) =>
+  (dispatch: any, getState: any) => {
+    const state = getState();
+    const { tabs, activeTab } = state.general;
+
+    if (activeTab !== null) {
+      const currentTab = tabs.find((tab: Tab) => tab.id === activeTab);
+
+      if (currentTab) {
+        const folderIndex = currentTab.folderStructure.findIndex(
+          (folder: Folder) => folder.id === folderId
+        );
+
+        if (folderIndex !== -1) {
+          const newFile: File = {
+            name: itemName,
+            content: content || "",
+          };
+
+          const updatedFolder = {
+            ...currentTab.folderStructure[folderIndex],
+            files: [...currentTab.folderStructure[folderIndex].files, newFile],
+          };
+
+          const updatedFolderStructure = [...currentTab.folderStructure];
+          updatedFolderStructure[folderIndex] = updatedFolder;
+
+          const updatedTab = {
+            ...currentTab,
+            folderStructure: updatedFolderStructure,
+          };
+
+          dispatch(updateTab(updatedTab));
+          toast.success("File added to folder successfully!");
+        }
       }
     }
   };
@@ -54,6 +124,7 @@ export const addFolderAction =
 
       if (currentTab) {
         const newFolder: Folder = {
+          id: Date.now(),
           name: itemName,
           files: [],
           folders: folderStructure || [],
@@ -84,21 +155,23 @@ export const generalSlice = createSlice({
       },
     ],
     modalIsOpen: false,
-    activeTab: null,
+    activeTab: 1,
     newFileName: "",
   } as GeneralState,
   reducers: {
-    openTab: (state, action) => {
+    openTab: (state, action: PayloadAction<Tab>) => {
       state.tabs = [...state.tabs, action.payload];
       state.activeTab = action.payload.id;
     },
-    updateTab: (state, action) => {
+    updateTab: (state, action: PayloadAction<Tab>) => {
       const index = state.tabs.findIndex((tab) => tab.id === action.payload.id);
       if (index !== -1) {
         state.tabs[index] = action.payload;
       }
     },
-    // Add other reducers as needed
+    openFileInEditor: (state, action: PayloadAction<{ tabId: number }>) => {
+      state.activeTab = action.payload.tabId;
+    },
   },
   // extraReducers: (builder) => {
   //   // Add extra reducers if needed

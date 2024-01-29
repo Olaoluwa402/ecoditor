@@ -1,5 +1,6 @@
 .container {
   background-color: #f3f3f3;
+  overflow: hidden;
 }
 
 .sidebar {
@@ -20,13 +21,14 @@
 }
 
 .main {
+  width: 100%;
   min-height: 100vh;
   display: flex;
 }
 
 .topbar,
 .main {
-  margin-left: 70px;
+  margin-left: 64px;
 }
 
 @media (min-width: 768px) {
@@ -46,6 +48,7 @@
   }
   .topbar,
   .main {
-    margin-left: 180px;
+    /* background-color: blue; */
+    margin-left: 250px;
   }
 }

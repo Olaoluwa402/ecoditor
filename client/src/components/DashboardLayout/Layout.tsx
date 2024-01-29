@@ -29,7 +29,7 @@ export const DashBoardLayout: React.FC = () => {
       <div className={styles.sidebar}>
         <SideBar />
       </div>
-      <main className={styles.main}>{<Outlet />}</main>
+      <main className={`${styles.main} overflow-hidden`}>{<Outlet />}</main>
     </div>
   );
 };

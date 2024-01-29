@@ -1,7 +1,7 @@
 // TabBar.tsx
 import React, { useState } from "react";
 import CodeEditor from "./CodeEditor";
-import Modal from "react-modal";
+//import Modal from "react-modal";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import { RootState } from "../reduxToolKit/store";
@@ -11,28 +11,31 @@ import { RootState } from "../reduxToolKit/store";
 //   title: string;
 // }
 
-const TabBar: React.FC = () => {
+const SandBox: React.FC = () => {
   const { tabs } = useSelector((store: RootState) => store.generalState);
-  const [modalIsOpen, setModalIsOpen] = useState(false);
-  const [newFileName, setNewFileName] = useState<string>("");
+  // const [modalIsOpen, setModalIsOpen] = useState(false);
+  //const [newFileName, setNewFileName] = useState<string>("");
   const [newFileExtension, setNewFileExtension] = useState<string>(".js");
   const [activeTab, setActiveTab] = useState<number | null>(null);
-  
-  let name = "js"
-  if(name ==="py"){
-    setModalIsOpen(false);
+  const [output, setOutput] = useState<string | null>(null);
+
+  let name = "js";
+  if (name === "py") {
+    //setModalIsOpen(false);
+    setOutput(null);
+    setNewFileExtension("");
   }
-  const addTab = () => {
-    // const newTab: Tab = {
-    //   id: Date.now(),
-    //   title: newFileName || `Tab ${tabs.length + 1}`,
-    // };
-    // setTabs([...tabs, newTab]);
-    // setModalIsOpen(false);
-    // setActiveTab(newTab.id);
-    // setNewFileName(""); // Reset newFileName after creating a new tab
-    // setNewFileExtension(".js"); // Reset newFileExtension after creating a new tab
-  };
+  // const addTab = () => {
+  //   // const newTab: Tab = {
+  //   //   id: Date.now(),
+  //   //   title: newFileName || `Tab ${tabs.length + 1}`,
+  //   // };
+  //   // setTabs([...tabs, newTab]);
+  //   // setModalIsOpen(false);
+  //   // setActiveTab(newTab.id);
+  //   // setNewFileName(""); // Reset newFileName after creating a new tab
+  //   // setNewFileExtension(".js"); // Reset newFileExtension after creating a new tab
+  // };
 
   const closeTab = (id: number) => {
     console.log(id);
@@ -44,18 +47,18 @@ const TabBar: React.FC = () => {
   //   // setModalIsOpen(true);
   // };
 
-  const closeModal = () => {
-    // setModalIsOpen(false);
-  };
+  // const closeModal = () => {
+  //   // setModalIsOpen(false);
+  // };
 
-  const createNewFile = () => {
-    if (newFileName.trim() === "") {
-      // Handle empty file name
-      return;
-    }
+  // const createNewFile = () => {
+  //   if (newFileName.trim() === "") {
+  //     // Handle empty file name
+  //     return;
+  //   }
 
-    addTab(); // Call the addTab function to create a new tab
-  };
+  //   addTab(); // Call the addTab function to create a new tab
+  // };
 
   const executeCode = async () => {
     console.log(`Executing code for tab: ${activeTab}`);
@@ -80,17 +83,17 @@ const TabBar: React.FC = () => {
   };
 
   return (
-    <div>
-      <div>
-        <div className="mx-auto ml-20">
-          <div className="rounded-lg border border-gray-300 bg-white py-2 px-3">
+    <div className="w-full">
+      <div className="w-full ">
+        <div className="w-full mx-auto ml-5">
+          <div className="w-full rounded-lg border border-gray-300  py-2 px-3">
             <nav className="flex flex-wrap gap-4">
               {tabs.map((tab) => (
                 <div
                   key={tab.id}
                   className={`tab ${
                     activeTab === tab.id ? "active" : ""
-                  } min-w-[90px] whitespace-nowrap inline-flex justify-between rounded-lg py-2 px-3 text-sm font-medium text-gray-600 transition-all duration-200 ease-in-out hover:bg-gray-200 hover:text-gray-900`}
+                  } w-[90px] border cursor-pointer whitespace-nowrap inline-flex justify-between rounded-lg py-2 px-3 text-sm font-medium text-gray-600 transition-all duration-200 ease-in-out hover:bg-gray-200 hover:text-gray-900`}
                   onClick={() => setActiveTab(tab.id)}
                 >
                   <span>{tab.title}</span>
@@ -110,25 +113,37 @@ const TabBar: React.FC = () => {
             {tab.title}
             <button onClick={() => closeTab(tab.id)}>X</button>
           </div>
-        ))}
-        <button onClick={openModal}>+</button> */}
+        ))} */}
+        {/* <button onClick={openModal}>+</button> */}
       </div>
-      <div>
-        {tabs.map((tab) => (
-          <div key={tab.id} className="editor-container">
-            <CodeEditor
-              fileName={tab.title}
-              extension={newFileExtension}
-              isActive={activeTab === tab.id}
-              executeCode={executeCode}
-              onChange={() => {}}
-            />
-          </div>
-        ))}
+      <div className="flex items-stretch p-5">
+        <div className="flex-1">
+          {tabs.map((tab) => (
+            <div key={tab.id} className="w-full h-[100vh]">
+              <CodeEditor
+                fileName={tab.title}
+                extension={newFileExtension}
+                isActive={activeTab === tab.id}
+                // executeCode={executeCode}
+                // onChange={() => {}}
+              />
+            </div>
+          ))}
+        </div>
+        <div className="flex-1 bg-slate-400">
+          {" "}
+          <button
+            className="bg-blue-600 p-1 text-white rounded cursor-pointer"
+            onClick={executeCode}
+          >
+            Execute Code
+          </button>
+          {output && <div className="">{output}</div>}
+        </div>
       </div>
 
       {/* Modal for creating a new file */}
-      <Modal
+      {/* <Modal
         isOpen={modalIsOpen}
         onRequestClose={closeModal}
         contentLabel="New File Modal"
@@ -150,13 +165,13 @@ const TabBar: React.FC = () => {
           >
             <option value=".js">.js</option>
             <option value=".ts">.ts</option>
-            {/* Add more extensions as needed */}
+            
           </select>
         </label>
         <button onClick={createNewFile}>Create</button>
-      </Modal>
+      </Modal> */}
     </div>
   );
 };
 
-export default TabBar;
+export default SandBox;
