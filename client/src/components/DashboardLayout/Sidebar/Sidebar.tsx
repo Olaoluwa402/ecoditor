@@ -39,7 +39,7 @@ const Sidebar: React.FC = () => {
           <div className="h-[30px] w-[100%] flex justify-between items-center gap-2 mt-10 mb-2 px-5">
             <div>
               <button
-                className="bg-blue-500 p-1 rounded"
+                className="bg-blue-500 hover:bg-blue-600 p-1 rounded"
                 onClick={() => {
                   dispatch(
                     setActionType({ actionType: ActionType.ADD_FOLDER })
@@ -54,7 +54,7 @@ const Sidebar: React.FC = () => {
             <div className="flex gap-2">
               <FaFolderPlus
                 size={20}
-                className="cursor-pointer"
+                className="cursor-pointer hover:text-slate-500"
                 onClick={() => {
                   dispatch(setRootFolderName({ value: "" }));
                   dispatch(
