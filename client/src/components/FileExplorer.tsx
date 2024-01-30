@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { BsFillFileEarmarkPlusFill } from "react-icons/bs";
 import { useDispatch, useSelector } from "react-redux";
 import { FaFolderPlus, FaFolderMinus } from "react-icons/fa6";
+import { FaPlus, FaTrash, FaEdit } from "react-icons/fa";
 import { MdSend } from "react-icons/md";
 import { toast } from "react-toastify";
 import { addFileAction } from "../reduxToolKit/features/general";
@@ -45,35 +46,71 @@ const FolderComponent: React.FC<FolderProps> = ({ folder, level = 0 }) => {
   //   setActiveFolder(folderName);
   // };
 
+  const onAdd = () => {
+    // Placeholder for add folder or file logic
+    console.log("Add folder or file:", folder.name);
+  };
+
+  const onEdit = () => {
+    // Placeholder for edit folder or file logic
+    console.log("Edit folder or file:", folder.name);
+  };
+
+  const onDelete = () => {
+    // Placeholder for delete folder or file logic
+    console.log("Delete folder or file:", folder.name);
+  };
+
   return (
     <div className={`pl-${level * 4} py-2`}>
-      <h3
-        className="text-sm font-semibold mb-1 cursor-pointer"
-        onClick={handleToggle}
-      >
-        <div className="flex items-center">
-          {isOpen ? (
-            <FaFolderMinus size={16} className="mr-1" />
-          ) : (
-            <FaFolderPlus size={16} className="mr-1" />
-          )}
-          <span>{truncateText(folder.name, 10)}</span>
+      <h3 className="text-sm font-semibold mb-1 cursor-pointer">
+        <div className="flex justify-between items-center">
+          <div className="flex items-center" onClick={handleToggle}>
+            {isOpen ? (
+              <FaFolderMinus size={16} className="mr-1" />
+            ) : (
+              <FaFolderPlus size={16} className="mr-1" />
+            )}
+            <span>{truncateText(folder.name, 10)}</span>
+          </div>
+          <div className="ml-2 flex space-x-1 items-center text-gray-600">
+            <FaPlus size={12} className="cursor-pointer" onClick={onAdd} />
+            <FaEdit size={12} className="cursor-pointer" onClick={onEdit} />
+            <FaTrash size={12} className="cursor-pointer" onClick={onDelete} />
+          </div>
         </div>
       </h3>
       {isOpen && (
         <ul>
           {folder.files?.length > 0 &&
             folder.files.map((file, fileIndex) => (
-              <li key={fileIndex} className="flex items-center pl-4">
-                <BsFillFileEarmarkPlusFill size={16} className="mr-1" />
-                <span
-                  className="cursor-pointer"
-                  onClick={() => {
-                    dispatch(openTabAction(file.name, file.name));
-                  }}
-                >
-                  {truncateText(file.name, 10)}
-                </span>
+              <li
+                key={fileIndex}
+                className="flex justify-between items-center pl-4"
+              >
+                <div className="flex items-center">
+                  <BsFillFileEarmarkPlusFill size={16} className="mr-1" />
+                  <span
+                    className="cursor-pointer"
+                    onClick={() => {
+                      dispatch(openTabAction(file.name, file.name));
+                    }}
+                  >
+                    {truncateText(file.name, 10)}
+                  </span>
+                </div>
+                <div className="ml-2 space-x-1 flex items-center text-gray-600">
+                  <FaEdit
+                    size={12}
+                    className="cursor-pointer"
+                    onClick={onEdit}
+                  />
+                  <FaTrash
+                    size={12}
+                    className="cursor-pointer"
+                    onClick={onDelete}
+                  />
+                </div>
               </li>
             ))}
           {folder.folders?.length > 0 &&
