@@ -107,6 +107,12 @@ const SandBox: React.FC = () => {
         <div className="flex-1 bg-slate-400">
           {" "}
           <button
+            className="bg-blue-600 p-1 mr-3 text-white rounded cursor-pointer"
+            // onClick={executeCode}
+          >
+            Save
+          </button>
+          <button
             className="bg-blue-600 p-1 text-white rounded cursor-pointer"
             // onClick={executeCode}
           >

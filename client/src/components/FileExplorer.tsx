@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { BsFillFileEarmarkPlusFill } from "react-icons/bs";
 import { useDispatch, useSelector } from "react-redux";
-import { FaFolderPlus, FaFolderMinus } from "react-icons/fa6";
-import { FaPlus, FaTrash, FaEdit } from "react-icons/fa";
+import { FaFolderPlus, FaFile, FaFolderMinus } from "react-icons/fa6";
+import { FaTrash, FaEdit } from "react-icons/fa";
 import { MdSend } from "react-icons/md";
 import { toast } from "react-toastify";
 import { addFileAction } from "../reduxToolKit/features/general";
@@ -11,6 +11,9 @@ import {
   openTabAction,
   addFileToFolderUserCollectionAction,
   addFolderToFolderUserCollectionAction,
+  setRootFolderName,
+  setActionType,
+  setShowOpenFile,
 } from "../reduxToolKit/features/general";
 import { truncateText } from "../util";
 import { ActionType } from "../interface";
@@ -27,28 +30,24 @@ interface Folder {
 
 interface FolderProps {
   folder: Folder;
+  name: string;
   level?: number;
 }
 
-const FolderComponent: React.FC<FolderProps> = ({ folder, level = 0 }) => {
+const FolderComponent: React.FC<FolderProps> = ({
+  folder,
+  name,
+  level = 0,
+}) => {
   const dispatch = useDispatch<AppDispatch>();
-  // const { userCollection } = useSelector(
-  //   (store: RootState) => store.generalState
-  // );
-  //const [activeFolder, setActiveFolder] = useState("project 1");
+  const { showOpenFile } = useSelector(
+    (store: RootState) => store.generalState
+  );
+
   const [isOpen, setIsOpen] = useState(true);
 
   const handleToggle = () => {
     setIsOpen(!isOpen);
-  };
-
-  // const folderClickHandler = (folderName: string) => {
-  //   setActiveFolder(folderName);
-  // };
-
-  const onAdd = () => {
-    // Placeholder for add folder or file logic
-    console.log("Add folder or file:", folder.name);
   };
 
   const onEdit = () => {
@@ -74,9 +73,34 @@ const FolderComponent: React.FC<FolderProps> = ({ folder, level = 0 }) => {
             <span>{truncateText(folder.name, 10)}</span>
           </div>
           <div className="ml-2 flex space-x-1 items-center text-gray-600">
-            <FaPlus size={12} className="cursor-pointer" onClick={onAdd} />
-            <FaEdit size={12} className="cursor-pointer" onClick={onEdit} />
-            <FaTrash size={12} className="cursor-pointer" onClick={onDelete} />
+            <FaFile
+              size={12}
+              className="cursor-pointer hover:text-white"
+              onClick={() => {
+                dispatch(setRootFolderName({ value: folder.name }));
+                dispatch(setActionType({ actionType: ActionType.ADD_FILE }));
+                dispatch(setShowOpenFile({ value: !showOpenFile }));
+              }}
+            />
+            <FaFolderPlus
+              size={12}
+              className="cursor-pointer hover:text-white"
+              onClick={() => {
+                dispatch(setRootFolderName({ value: folder.name }));
+                dispatch(setActionType({ actionType: ActionType.ADD_FOLDER }));
+                dispatch(setShowOpenFile({ value: !showOpenFile }));
+              }}
+            />
+            <FaEdit
+              size={12}
+              className="cursor-pointer hover:text-white"
+              onClick={onEdit}
+            />
+            <FaTrash
+              size={12}
+              className="cursor-pointer hover:text-white"
+              onClick={onDelete}
+            />
           </div>
         </div>
       </h3>
@@ -102,12 +126,12 @@ const FolderComponent: React.FC<FolderProps> = ({ folder, level = 0 }) => {
                 <div className="ml-2 space-x-1 flex items-center text-gray-600">
                   <FaEdit
                     size={12}
-                    className="cursor-pointer"
+                    className="cursor-pointer hover:text-white"
                     onClick={onEdit}
                   />
                   <FaTrash
                     size={12}
-                    className="cursor-pointer"
+                    className="cursor-pointer hover:text-white"
                     onClick={onDelete}
                   />
                 </div>
@@ -116,7 +140,11 @@ const FolderComponent: React.FC<FolderProps> = ({ folder, level = 0 }) => {
           {folder.folders?.length > 0 &&
             folder.folders.map((subFolder, subFolderIndex) => (
               <li key={subFolderIndex}>
-                <FolderComponent folder={subFolder} level={level + 1} />
+                <FolderComponent
+                  folder={subFolder}
+                  name={name}
+                  level={level + 1}
+                />
               </li>
             ))}
         </ul>
@@ -125,24 +153,12 @@ const FolderComponent: React.FC<FolderProps> = ({ folder, level = 0 }) => {
   );
 };
 
-interface FileExplorerProp {
-  showOpenFile: boolean;
-  setShowOpenFile: (setShowOpenFile: boolean) => void;
-  actionType: ActionType;
-  isNewRoot: boolean;
-  //setActionType: (setActionType: ActionType) => void;
-}
-const FileExplorer: React.FC<FileExplorerProp> = ({
-  showOpenFile,
-  setShowOpenFile,
-  actionType,
-  isNewRoot,
-  // setActionType,
-}) => {
+interface FileExplorerProp {}
+const FileExplorer: React.FC<FileExplorerProp> = ({}) => {
   const dispatch = useDispatch<AppDispatch>();
-  const { userCollection } = useSelector(
-    (store: RootState) => store.generalState
-  );
+  const { userCollection, rootFolderName, actionType, showOpenFile } =
+    useSelector((store: RootState) => store.generalState);
+
   const [name, setName] = useState("");
 
   const submitHandler = () => {
@@ -156,10 +172,10 @@ const FileExplorer: React.FC<FileExplorerProp> = ({
         // Check if the file name ends with either '.ts' or '.py'
         const isValidFile = /\.(ts|py)$/.test(name);
         if (isValidFile) {
-          const fName = isNewRoot ? "" : "project 1";
           dispatch(addFileAction(name));
-          dispatch(addFileToFolderUserCollectionAction(fName, name));
-          setShowOpenFile(false);
+          console.log(rootFolderName, "pName");
+          dispatch(addFileToFolderUserCollectionAction(rootFolderName, name));
+          dispatch(setShowOpenFile({ value: false }));
           setName("");
         } else {
           // Handle the case when the file name is invalid
@@ -168,10 +184,9 @@ const FileExplorer: React.FC<FileExplorerProp> = ({
         }
         break;
       case ActionType.ADD_FOLDER:
-        const pName = isNewRoot ? "" : "project 1";
-        console.log(pName, "pName");
-        dispatch(addFolderToFolderUserCollectionAction(pName, name));
-        setShowOpenFile(false);
+        console.log(rootFolderName, "pName");
+        dispatch(addFolderToFolderUserCollectionAction(rootFolderName, name));
+        dispatch(setShowOpenFile({ value: false }));
         setName("");
         break;
       default:
@@ -182,7 +197,7 @@ const FileExplorer: React.FC<FileExplorerProp> = ({
     <div className="bg-gray-800 text-white p-4">
       {userCollection.collections?.length > 0 &&
         userCollection.collections.map((folder, index) => (
-          <FolderComponent key={index} folder={folder} />
+          <FolderComponent key={index} folder={folder} name={name} />
         ))}
 
       {showOpenFile && (

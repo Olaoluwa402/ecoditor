@@ -6,6 +6,7 @@ import {
   Folder,
   GeneralState,
   CollectionFolder,
+  ActionType,
 } from "../../../interface";
 import { AppDispatch } from "../../store";
 import { getLanguage } from "../../../util";
@@ -31,24 +32,29 @@ export const openTabAction =
       file: newFile,
     };
 
-    //prevent adding tab that is already in tab list
-    const exist = tabs.find((tab: Tab) => tab.title == newFileName);
-    console.log(exist, "exist");
-    if (exist) {
-      return;
-    }
+    dispatch(openFileInEditor({ tabId: newTab.id }));
     if (tabs.length >= 10) {
       toast.warn("You can only open maximum of 10 tabs concurrently");
       return;
     }
-    dispatch(openTab(newTab));
+    //prevent adding tab that is already in tab list
+    const existTab = tabs.find((tab: Tab) => tab.title == newFileName);
+    if (existTab) {
+      dispatch(openTab({ tab: existTab, exist: true }));
+      return;
+    }
 
-    dispatch(openFileInEditor({ tabId: newTab.id }));
+    dispatch(openTab({ tab: newTab, exist: false }));
     //toast.success("Tab opened successfully!");
   };
 
 export const addFileToFolderUserCollectionAction =
-  (folderName: string, fileName: string, content?: string) =>
+  (
+    folderName: string,
+    fileName: string,
+    content?: string,
+    parentFolderName?: string
+  ) =>
   (dispatch: AppDispatch, getState: any) => {
     const state = getState();
     const { userCollection } = state.generalState;
@@ -92,6 +98,30 @@ export const addFileToFolderUserCollectionAction =
       (folder: CollectionFolder) =>
         addFileToFolderUserCollection(folder, fileName, content)
     );
+
+    // If there's a parent folder, find it and add the new file
+    if (parentFolderName && parentFolderName !== "") {
+      const parentFolder = updatedUserCollection.find(
+        (folder: CollectionFolder) => folder.name === parentFolderName
+      );
+
+      if (parentFolder) {
+        const updatedParentFolder = addFileToFolderUserCollection(
+          parentFolder,
+          fileName,
+          content
+        );
+
+        // Update the userCollection with the modified parent folder
+        const index = updatedUserCollection.findIndex(
+          (folder: CollectionFolder) => folder.name === parentFolderName
+        );
+
+        if (index !== -1) {
+          updatedUserCollection[index] = updatedParentFolder;
+        }
+      }
+    }
 
     dispatch(addFileToUserCollection(updatedUserCollection));
   };
@@ -341,11 +371,19 @@ export const generalSlice = createSlice({
     activeTab: 1,
     newFileName: "",
     userCollection: UserCollection,
+    showOpenFile: false,
+    actionType: ActionType.ADD_FILE,
+    rootFolderName: "",
   } as GeneralState,
   reducers: {
-    openTab: (state, action: PayloadAction<Tab>) => {
-      state.tabs = [...state.tabs, action.payload];
-      state.activeTab = action.payload.id;
+    openTab: (state, action: PayloadAction<{ tab: Tab; exist: boolean }>) => {
+      if (action.payload.exist) {
+        state.tabs = [...state.tabs];
+        state.activeTab = action.payload.tab.id;
+        return;
+      }
+      state.tabs = [...state.tabs, action.payload.tab];
+      state.activeTab = action.payload.tab.id;
     },
     closeTab: (state, action: PayloadAction<number>) => {
       // Close the tab with the given ID
@@ -374,6 +412,18 @@ export const generalSlice = createSlice({
       console.log(action.payload.tabId, "tabId");
       state.activeTab = action.payload.tabId;
     },
+    setActionType: (
+      state,
+      action: PayloadAction<{ actionType: ActionType }>
+    ) => {
+      state.actionType = action.payload.actionType;
+    },
+    setShowOpenFile: (state, action: PayloadAction<{ value?: boolean }>) => {
+      state.showOpenFile = action.payload.value;
+    },
+    setRootFolderName: (state, action: PayloadAction<{ value: string }>) => {
+      state.rootFolderName = action.payload.value;
+    },
   },
   // extraReducers: (builder) => {
   //   // Add extra reducers if needed
@@ -386,6 +436,9 @@ export const {
   updateTab,
   openFileInEditor,
   addFileToUserCollection,
+  setActionType,
+  setShowOpenFile,
+  setRootFolderName,
 } = generalSlice.actions;
 
 export default generalSlice.reducer;

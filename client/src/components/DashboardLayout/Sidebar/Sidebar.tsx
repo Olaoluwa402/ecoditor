@@ -1,21 +1,26 @@
-import React, { useState } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 //import { toast } from "react-toastify";
 import { logoutAction } from "../../../reduxToolKit/features/auth";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../../../reduxToolKit/store";
-import { BsFillFileEarmarkPlusFill } from "react-icons/bs";
 import { FaFolderPlus } from "react-icons/fa6";
 import FileExplorer from "../../FileExplorer";
 import { ActionType } from "../../../interface";
+import {
+  setRootFolderName,
+  setActionType,
+  setShowOpenFile,
+} from "../../../reduxToolKit/features/general";
 
 const Sidebar: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
   const { user } = useSelector((store: RootState) => store.loggedInUser);
-  const [showOpenFile, setShowOpenFile] = useState(false);
-  const [actionType, setActionType] = useState(ActionType.ADD_FILE);
-  const [isNewRoot, setIsNewRoot] = useState(false);
+  const { showOpenFile } = useSelector(
+    (store: RootState) => store.generalState
+  );
+
   function logoutHandler() {
     dispatch(logoutAction());
   }
@@ -36,45 +41,34 @@ const Sidebar: React.FC = () => {
               <button
                 className="bg-blue-500 p-1 rounded"
                 onClick={() => {
-                  setActionType(() => ActionType.ADD_FOLDER);
-                  setIsNewRoot(() => true);
-                  setShowOpenFile((prev) => !prev);
+                  dispatch(
+                    setActionType({ actionType: ActionType.ADD_FOLDER })
+                  );
+                  dispatch(setRootFolderName({ value: "" }));
+                  dispatch(setShowOpenFile({ value: !showOpenFile }));
                 }}
               >
                 New Project
               </button>
             </div>
             <div className="flex gap-2">
-              <BsFillFileEarmarkPlusFill
-                onClick={() => {
-                  setIsNewRoot(() => false);
-                  setActionType(() => ActionType.ADD_FILE);
-                  setShowOpenFile((prev) => !prev);
-                }}
-                size={20}
-                className="cursor-pointer"
-              />
               <FaFolderPlus
                 size={20}
                 className="cursor-pointer"
                 onClick={() => {
-                  setIsNewRoot(() => false);
-                  setActionType(() => ActionType.ADD_FOLDER);
-                  setShowOpenFile((prev) => !prev);
+                  dispatch(setRootFolderName({ value: "" }));
+                  dispatch(
+                    setActionType({ actionType: ActionType.ADD_FOLDER })
+                  );
+                  dispatch(setShowOpenFile({ value: !showOpenFile }));
                 }}
               />
             </div>
           </div>
 
-          <FileExplorer
-            showOpenFile={showOpenFile}
-            setShowOpenFile={setShowOpenFile}
-            actionType={actionType}
-            isNewRoot={isNewRoot}
-            // setActionType={setActionType}
-          />
+          <FileExplorer />
 
-          <div className="my-6 mt-auto ml-10 flex cursor-pointer">
+          <div className="my-6 mt-auto ml-10 flex">
             <div>
               <img
                 className="h-12 w-12 rounded-full"
@@ -83,7 +77,12 @@ const Sidebar: React.FC = () => {
             </div>
             <div className="ml-3">
               <p className="font-medium capitalize">{user?.user?.username}</p>
-              <button onClick={logoutHandler}>logout</button>
+              <button
+                className="rounded bg-red-900 hover:bg-red-400 text-white my-2 px-3 cursor-pointer"
+                onClick={logoutHandler}
+              >
+                logout
+              </button>
             </div>
           </div>
         </div>

@@ -56,6 +56,9 @@ export interface GeneralState {
   userCollection: {
     collections: CollectionFolder[];
   };
+  showOpenFile: boolean | undefined;
+  actionType: ActionType;
+  rootFolderName: string | "";
 }
 
 export enum ActionType {
