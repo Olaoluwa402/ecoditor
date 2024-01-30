@@ -96,6 +96,71 @@ export const addFileToFolderUserCollectionAction =
     dispatch(addFileToUserCollection(updatedUserCollection));
   };
 
+export const addFolderToFolderUserCollectionAction =
+  (parentFolderName: string, folderName: string) =>
+  (dispatch: AppDispatch, getState: any) => {
+    const state = getState();
+    const { userCollection } = state.generalState;
+
+    const addFolderToFolderUserCollection = (
+      currentFolder: CollectionFolder,
+      parentFolderName: string,
+      folderName: string
+    ): CollectionFolder => {
+      // Check if the currentFolder is the target folder
+      if (currentFolder.name === parentFolderName) {
+        // Check if the folder already exists in the folders array
+        const folderExists = currentFolder.folders?.some(
+          (folder) => folder.name === folderName
+        );
+
+        if (!folderExists) {
+          return {
+            ...currentFolder,
+            folders: [
+              ...(currentFolder.folders || []),
+              { name: folderName, files: [], folders: [] },
+            ],
+          };
+        }
+      }
+
+      // If the currentFolder has sub-folders, apply the function recursively
+      if (currentFolder.folders && currentFolder.folders.length > 0) {
+        return {
+          ...currentFolder,
+          folders: currentFolder.folders.map((subFolder) =>
+            addFolderToFolderUserCollection(
+              subFolder,
+              parentFolderName,
+              folderName
+            )
+          ),
+        };
+      }
+
+      // If the currentFolder is not the target folder and has no sub-folders, return it unchanged
+      return currentFolder;
+    };
+
+    // Map over the userCollection to apply the addFolderToFolderUserCollection function
+    const updatedUserCollection = userCollection.collections.map(
+      (folder: CollectionFolder) =>
+        addFolderToFolderUserCollection(folder, parentFolderName, folderName)
+    );
+
+    // If the target folder wasn't found and there is no parentFolderName, append the new folder directly to the collections array
+    if (
+      !updatedUserCollection.some(
+        (folder: CollectionFolder) => folder.name === parentFolderName
+      ) &&
+      !parentFolderName
+    ) {
+      updatedUserCollection.push({ name: folderName, files: [], folders: [] });
+    }
+    dispatch(addFileToUserCollection(updatedUserCollection));
+  };
+
 // Action creator to add a file to the current tab and update tab title
 export const addFileAction =
   (itemName: string, content?: string) => (dispatch: any, getState: any) => {

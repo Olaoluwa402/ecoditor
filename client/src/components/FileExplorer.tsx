@@ -9,8 +9,10 @@ import { AppDispatch, RootState } from "../reduxToolKit/store";
 import {
   openTabAction,
   addFileToFolderUserCollectionAction,
+  addFolderToFolderUserCollectionAction,
 } from "../reduxToolKit/features/general";
 import { truncateText } from "../util";
+import { ActionType } from "../interface";
 
 interface File {
   name: string;
@@ -89,33 +91,54 @@ const FolderComponent: React.FC<FolderProps> = ({ folder, level = 0 }) => {
 interface FileExplorerProp {
   showOpenFile: boolean;
   setShowOpenFile: (setShowOpenFile: boolean) => void;
+  actionType: ActionType;
+  isNewRoot: boolean;
+  //setActionType: (setActionType: ActionType) => void;
 }
 const FileExplorer: React.FC<FileExplorerProp> = ({
   showOpenFile,
   setShowOpenFile,
+  actionType,
+  isNewRoot,
+  // setActionType,
 }) => {
   const dispatch = useDispatch<AppDispatch>();
   const { userCollection } = useSelector(
     (store: RootState) => store.generalState
   );
-  const [fileName, setFileName] = useState("");
+  const [name, setName] = useState("");
 
   const submitHandler = () => {
-    if (!fileName) {
+    if (!name) {
       toast.warn("Field is required");
       return;
     }
-    // Check if the file name ends with either '.ts' or '.py'
-    const isValidFile = /\.(ts|py)$/.test(fileName);
-    if (isValidFile) {
-      dispatch(addFileAction(fileName));
-      dispatch(addFileToFolderUserCollectionAction("project 1", fileName));
-      setShowOpenFile(false);
-      setFileName("");
-    } else {
-      // Handle the case when the file name is invalid
-      toast.warn("Invalid file name. It should end with .ts or .py");
-      return;
+
+    switch (actionType) {
+      case ActionType.ADD_FILE:
+        // Check if the file name ends with either '.ts' or '.py'
+        const isValidFile = /\.(ts|py)$/.test(name);
+        if (isValidFile) {
+          const fName = isNewRoot ? "" : "project 1";
+          dispatch(addFileAction(name));
+          dispatch(addFileToFolderUserCollectionAction(fName, name));
+          setShowOpenFile(false);
+          setName("");
+        } else {
+          // Handle the case when the file name is invalid
+          toast.warn("Invalid file name. It should end with .ts or .py");
+          return;
+        }
+        break;
+      case ActionType.ADD_FOLDER:
+        const pName = isNewRoot ? "" : "project 1";
+        console.log(pName, "pName");
+        dispatch(addFolderToFolderUserCollectionAction(pName, name));
+        setShowOpenFile(false);
+        setName("");
+        break;
+      default:
+        break;
     }
   };
   return (
@@ -129,9 +152,13 @@ const FileExplorer: React.FC<FileExplorerProp> = ({
         <div className="w-[100%] flex items-center my-2">
           <input
             type="text"
-            placeholder="name.ts or name.py"
-            value={fileName}
-            onChange={(e) => setFileName(e.target.value)}
+            placeholder={
+              actionType === ActionType.ADD_FILE
+                ? "name.ts or name.py"
+                : "add folder name"
+            }
+            value={name}
+            onChange={(e) => setName(e.target.value)}
             className="p-1 text-black"
           />
           <div

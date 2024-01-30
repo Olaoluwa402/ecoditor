@@ -57,3 +57,12 @@ export interface GeneralState {
     collections: CollectionFolder[];
   };
 }
+
+export enum ActionType {
+  ADD_FILE = "ADD_FILE",
+  ADD_FOLDER = "ADD_FOLDER",
+  EDIT_FILE = "EDIT_FILE",
+  EDIT_FOLDER = "EDIT_FOLDER",
+  DELETE_FILE = "DELETE_FILE",
+  DELETE_FOLDER = "DELETE_FOLDER",
+}

@@ -7,13 +7,15 @@ import { AppDispatch, RootState } from "../../../reduxToolKit/store";
 import { BsFillFileEarmarkPlusFill } from "react-icons/bs";
 import { FaFolderPlus } from "react-icons/fa6";
 import FileExplorer from "../../FileExplorer";
+import { ActionType } from "../../../interface";
 
 const Sidebar: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
   const { user } = useSelector((store: RootState) => store.loggedInUser);
   const [showOpenFile, setShowOpenFile] = useState(false);
-
+  const [actionType, setActionType] = useState(ActionType.ADD_FILE);
+  const [isNewRoot, setIsNewRoot] = useState(false);
   function logoutHandler() {
     dispatch(logoutAction());
   }
@@ -31,21 +33,45 @@ const Sidebar: React.FC = () => {
           </h1>
           <div className="h-[30px] w-[100%] flex justify-between items-center gap-2 mt-10 mb-2 px-5">
             <div>
-              <button className="bg-blue-500 p-1 rounded">New Project</button>
+              <button
+                className="bg-blue-500 p-1 rounded"
+                onClick={() => {
+                  setActionType(() => ActionType.ADD_FOLDER);
+                  setIsNewRoot(() => true);
+                  setShowOpenFile((prev) => !prev);
+                }}
+              >
+                New Project
+              </button>
             </div>
             <div className="flex gap-2">
               <BsFillFileEarmarkPlusFill
-                onClick={() => setShowOpenFile((prev) => !prev)}
+                onClick={() => {
+                  setIsNewRoot(() => false);
+                  setActionType(() => ActionType.ADD_FILE);
+                  setShowOpenFile((prev) => !prev);
+                }}
                 size={20}
                 className="cursor-pointer"
               />
-              <FaFolderPlus size={20} className="cursor-pointer" />
+              <FaFolderPlus
+                size={20}
+                className="cursor-pointer"
+                onClick={() => {
+                  setIsNewRoot(() => false);
+                  setActionType(() => ActionType.ADD_FOLDER);
+                  setShowOpenFile((prev) => !prev);
+                }}
+              />
             </div>
           </div>
 
           <FileExplorer
             showOpenFile={showOpenFile}
             setShowOpenFile={setShowOpenFile}
+            actionType={actionType}
+            isNewRoot={isNewRoot}
+            // setActionType={setActionType}
           />
 
           <div className="my-6 mt-auto ml-10 flex cursor-pointer">
