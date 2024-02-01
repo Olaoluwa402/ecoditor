@@ -9,6 +9,7 @@ import { useDispatch } from "react-redux";
 import { AppDispatch } from "../reduxToolKit/store";
 import { truncateText } from "../util";
 import { Tab } from "../interface";
+import { toast } from "react-toastify";
 
 const SandBox: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -50,6 +51,14 @@ const SandBox: React.FC = () => {
     } catch (error: any) {
       // Handle errors
       console.error("Error executing code:", error);
+      const message =
+        error.response && error.response.data.error
+          ? error.response.data.error
+          : error.response && error.response.data.message
+          ? error.response.data.message
+          : error.message;
+      console.log(message, "error");
+      toast.error(`${message}`);
     }
 
     console.log(`Code execution completed for tab: ${activeTab}`);
