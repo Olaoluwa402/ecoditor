@@ -15,6 +15,8 @@ RUN apt-get update && \
     apt-get install -y nodejs npm && \
     rm -rf /var/lib/apt/lists/*
 
+Run npm install -g ts-node
+
 # Change working directory to the client folder
 WORKDIR /app/client
 
@@ -22,16 +24,9 @@ WORKDIR /app/client
 RUN npm install
 RUN npm run build
 
-# Change back to the /app directory
 WORKDIR /app
 
-# Run Flask-Migrate commands to upgrade the database
-#RUN flask db upgrade
-
-# Make port 5000 available to the world outside this container
 EXPOSE 5000
 
-# Run the Python app when the container launches
-#CMD ["python", "run.py"]
 
 CMD ["gunicorn", "-b", "0.0.0.0:5000", "run:app"]

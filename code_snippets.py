@@ -4,28 +4,21 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask import Flask, request, jsonify, make_response
 import requests
 from enum import Enum
+import subprocess
+import sys
+import os
 
 ecode_ns = Namespace("EditorCode", description="A namespace for EditorCode")
+
+code_model = ecode_ns.model(
+    "EditorCode", {"code": fields.String(), "language": fields.String()}
+)
 
 
 class LanguageEnum(Enum):
     PYTHON = "python"
     JAVASCRIPT = "javascript"
     JAVA = "java"
-
-
-ecode_model = ecode_ns.model(
-    "EditorCode",
-    {
-        "title": fields.String(),
-        "code": fields.String(),
-        "language": fields.String(
-            enum=[lang.value for lang in LanguageEnum],
-            description="Programming Language",
-        ),
-        "description": fields.String(),
-    },
-)
 
 
 @ecode_ns.route("/hello")
@@ -36,114 +29,91 @@ class HelloResource(Resource):
 
 @ecode_ns.route("/codes")
 class RecipesResource(Resource):
-    @ecode_ns.marshal_list_with(ecode_model)
-    def get(self):
-        """Get all codes"""
-        try:
-            codes = EditorCode.query.all()
-            return codes
-        except Exception as e:
-            return make_response(jsonify({"error": str(e)}), 500)
-
-    @ecode_ns.marshal_with(ecode_model)
-    @ecode_ns.expect(ecode_model)
-    # @jwt_required()
+    @ecode_ns.expect(code_model)
     def post(self):
-        """Create a new ecode"""
+        """Compile code"""
         try:
-            # Get the currently logged-in user's identity
-            current_user_id = get_jwt_identity()
-
             data = request.get_json()
 
+            print(data.get("code"), data.get("language"), "data")
+
             code_snippet = execute_user_code(data.get("code"), data.get("language"))
+            print(code_snippet, "code_snippet")
 
             if "error" in code_snippet:
                 print(f"Error executing code: {code_snippet['error']}")
                 return jsonify({"error": code_snippet["error"]}), 400
             else:
                 print(f"Execution result: {code_snippet['result']}")
-
-                new_code = EditorCode(
-                    title=data.get("title"),
-                    description=data.get("description"),
-                    code=code_snippet,
-                    language=data.get("language"),
-                    user_id=current_user_id,
-                )
-
-                new_code.save()
-
-                return new_code, 201
+                return code_snippet, 201
         except Exception as e:
+            # print(f"Error executing code: {str(e)}")
             return make_response(jsonify({"error": str(e)}), 500)
-
-
-@ecode_ns.route("/codes/<int:id>")
-class RecipeResource(Resource):
-    @ecode_ns.marshal_with(ecode_model)
-    def get(self, id):
-        """Get a code by id"""
-        try:
-            code = EditorCode.query.get_or_404(id)
-            return code
-        except Exception as e:
-            return make_response(jsonify({"error": str(e)}), 500)
-
-    @ecode_ns.marshal_with(ecode_model)
-    @jwt_required()
-    def put(self, id):
-        """Update an ecode by id"""
-        try:
-            code_to_update = EditorCode.query.get_or_404(id)
-            data = request.get_json()
-            code_to_update.update(
-                data.get("title"),
-                data.get("description"),
-                data.get("code"),
-                data.get("language"),
-            )
-            return code_to_update
-        except Exception as e:
-            return make_response(jsonify({"error": str(e)}), 500)
-
-    @ecode_ns.marshal_with(ecode_model)
-    @jwt_required()
-    def delete(self, id):
-        """Delete a code by id"""
-        try:
-            code_to_delete = EditorCode.query.get_or_404(id)
-            code_to_delete.delete()
-            return code_to_delete
-        except Exception as e:
-            return make_response(jsonify({"error": str(e)}), 500)
-
-
-def execute_user_code_repls(code, language="python"):
-    try:
-        # Specify the language in the API request
-        url = f"https://replit.com/api/v0/repls/lang/{language}"
-        payload = {"code": code}
-        response = requests.post(url, json=payload)
-
-        if response.status_code == 200:
-            return response.json()
-        else:
-            return {
-                "error": f"Failed to execute code. Status code: {response.status_code}"
-            }
-    except Exception as e:
-        return {"error": str(e)}
 
 
 def execute_user_code(code, language):
     try:
-        print(code, language, "code and language")
         if language == "python":
-            exec_result = {}
-            exec(code, {}, exec_result)
-            return {"result": exec_result}
+            result = subprocess.run(
+                ["python", "-c", code], text=True, capture_output=True, check=True
+            )
+            return {"result": result.stdout}
+        elif language == "typescript":
+            # Get the absolute path to the directory of the Python script
+            script_dir = os.path.dirname(os.path.abspath(__file__))
+
+            # Create an absolute path for the temporary TypeScript file
+            temp_ts_file_path = os.path.join(script_dir, "temp_typescript_code.ts")
+
+            # Write the TypeScript code to the temporary file
+            with open(temp_ts_file_path, "w") as ts_file:
+                ts_file.write(code)
+
+            ts_node_path = get_ts_node_path()
+            if not ts_node_path.lower().endswith(".cmd"):
+                ts_node_path += ".cmd"
+
+            print("ts_node_path:", ts_node_path)
+            print("temp_ts_file_path:", temp_ts_file_path)
+            result = subprocess.run(
+                [ts_node_path, temp_ts_file_path],
+                text=True,
+                capture_output=True,
+                check=True,
+            )
+            print(result, "rsulttttt")
+
+            return {"result": result.stdout}
         else:
             return {"error": "Unsupported language"}
-    except Exception as e:
+    except subprocess.CalledProcessError as e:
         return {"error": str(e)}
+
+
+def get_ts_node_path():
+    try:
+        if sys.platform.startswith("win"):
+            result = subprocess.run(
+                ["where", "ts-node.cmd"], text=True, capture_output=True, check=True
+            )
+            ts_node_path = result.stdout.strip()
+            if not ts_node_path:
+                result = subprocess.run(
+                    ["where", "ts-node"], text=True, capture_output=True, check=True
+                )
+                ts_node_path = result.stdout.strip()
+        else:
+            result = subprocess.run(
+                ["which", "ts-node"], text=True, capture_output=True, check=True
+            )
+            ts_node_path = result.stdout.strip()
+
+        # Return the path to ts-node or raise an exception if not found
+        if not ts_node_path:
+            raise Exception(
+                "ts-node not found. Make sure it's installed and in your PATH."
+            )
+
+        return ts_node_path
+    except subprocess.CalledProcessError:
+        raise Exception("ts-node not found. Make sure it's installed and in your PATH.")
