@@ -10,6 +10,7 @@ import { AppDispatch } from "../reduxToolKit/store";
 import { truncateText } from "../util";
 import { Tab } from "../interface";
 import { toast } from "react-toastify";
+import { constants } from "../config/constants";
 
 const SandBox: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -37,7 +38,7 @@ const SandBox: React.FC = () => {
     try {
       if (code && language) {
         const response = await axios.post(
-          "http://127.0.0.1:5001/EditorCode/codes",
+          `${constants.backendBaseUrl}/EditorCode/codes`,
           {
             code: code,
             language: language,

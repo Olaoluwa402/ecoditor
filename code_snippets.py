@@ -47,7 +47,7 @@ class RecipesResource(Resource):
                 print(f"Execution result: {code_snippet['result']}")
                 # Extract relevant information and return as JSON
                 result_data = {"result": code_snippet["result"]}
-                return jsonify(result_data), 201
+                return result_data
         except Exception as e:
             print(f"Error executing code: {str(e)}")
             # Handle other exceptions and return as JSON
