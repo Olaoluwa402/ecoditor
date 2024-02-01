@@ -5,7 +5,6 @@ import { FaFolderPlus, FaFile, FaFolderMinus } from "react-icons/fa6";
 import { FaTrash, FaEdit } from "react-icons/fa";
 import { MdSend } from "react-icons/md";
 import { toast } from "react-toastify";
-import { addFileAction } from "../reduxToolKit/features/general";
 import { AppDispatch, RootState } from "../reduxToolKit/store";
 import {
   openTabAction,
@@ -16,20 +15,10 @@ import {
   setShowOpenFile,
 } from "../reduxToolKit/features/general";
 import { truncateText } from "../util";
-import { ActionType } from "../interface";
-
-interface File {
-  name: string;
-}
-
-interface Folder {
-  name: string;
-  files: File[];
-  folders: Folder[];
-}
+import { ActionType, CollectionFolder } from "../interface";
 
 interface FolderProps {
-  folder: Folder;
+  folder: CollectionFolder;
   name: string;
   level?: number;
 }
@@ -117,7 +106,9 @@ const FolderComponent: React.FC<FolderProps> = ({
                   <span
                     className="cursor-pointer"
                     onClick={() => {
-                      dispatch(openTabAction(file.name, file.name));
+                      dispatch(
+                        openTabAction(folder.name, file.name, file.content)
+                      );
                     }}
                   >
                     {truncateText(file.name, 10)}
@@ -172,7 +163,7 @@ const FileExplorer: React.FC<FileExplorerProp> = ({}) => {
         // Check if the file name ends with either '.ts' or '.py'
         const isValidFile = /\.(ts|py)$/.test(name);
         if (isValidFile) {
-          dispatch(addFileAction(name));
+          dispatch(openTabAction(rootFolderName, name, ""));
           console.log(rootFolderName, "pName");
           dispatch(addFileToFolderUserCollectionAction(rootFolderName, name));
           dispatch(setShowOpenFile({ value: false }));
@@ -193,6 +184,7 @@ const FileExplorer: React.FC<FileExplorerProp> = ({}) => {
         break;
     }
   };
+  console.log(userCollection, "userCollection - folder");
   return (
     <div className="bg-gray-800 text-white p-4">
       {userCollection.collections?.length > 0 &&

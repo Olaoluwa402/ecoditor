@@ -2,6 +2,7 @@ export interface Tab {
   id: number;
   title: string;
   file?: File;
+  folderName: string;
   folderStructure: Folder[];
 }
 
@@ -49,7 +50,7 @@ export interface CollectionFolder {
 }
 
 export interface GeneralState {
-  tabs: Tab[];
+  tabs: Tab[] | [];
   modalIsOpen: boolean;
   activeTab: number | null;
   newFileName: string;

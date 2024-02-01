@@ -12,7 +12,7 @@ import { AppDispatch } from "../../store";
 import { getLanguage } from "../../../util";
 
 export const openTabAction =
-  (newFileName: string, content: any) =>
+  (folderName: string, newFileName: string, content: any) =>
   (dispatch: AppDispatch, getState: any) => {
     const state = getState();
     const { tabs } = state.generalState;
@@ -25,25 +25,43 @@ export const openTabAction =
       },
     };
 
-    const newTab: Tab = {
-      id: tabs.length + 1,
-      title: newFileName,
-      folderStructure: [],
-      file: newFile,
-    };
-
-    dispatch(openFileInEditor({ tabId: newTab.id }));
     if (tabs.length >= 10) {
       toast.warn("You can only open maximum of 10 tabs concurrently");
       return;
     }
     //prevent adding tab that is already in tab list
     const existTab = tabs.find((tab: Tab) => tab.title == newFileName);
+
+    console.log(existTab, "existTab");
+
     if (existTab) {
-      dispatch(openTab({ tab: existTab, exist: true }));
+      dispatch(openFileInEditor({ tabId: existTab.id }));
+      const key = existTab.title;
+      const fileObj = existTab.file[existTab.title];
+      console.log({ [key]: { ...fileObj, content: content } }, "key, fileObj");
+      dispatch(
+        openTab({
+          tab: {
+            ...existTab,
+            file: { [key]: { ...fileObj, content: content } },
+          },
+          exist: true,
+        })
+      );
       return;
     }
 
+    const newTab: Tab = {
+      id: tabs.length + 1,
+      title: newFileName,
+      folderStructure: [],
+      file: newFile,
+      folderName: folderName,
+    };
+
+    console.log(newTab, "newTab");
+
+    dispatch(openFileInEditor({ tabId: newTab.id }));
     dispatch(openTab({ tab: newTab, exist: false }));
     //toast.success("Tab opened successfully!");
   };
@@ -124,6 +142,143 @@ export const addFileToFolderUserCollectionAction =
     }
 
     dispatch(addFileToUserCollection(updatedUserCollection));
+  };
+
+export const updateFileContentUserCollectionAction =
+  (
+    folderName: string,
+    fileName: string,
+    newContent: string,
+    parentFolderName?: string
+  ) =>
+  (dispatch: AppDispatch, getState: any) => {
+    const state = getState();
+    const { userCollection } = state.generalState;
+
+    const updateFileContentInFolder = (
+      currentFolder: CollectionFolder,
+      fileName: string,
+      newContent: string
+    ): CollectionFolder => {
+      // Check if the currentFolder is the target folder
+      if (currentFolder.name === folderName) {
+        // Check if the fileName already exists in the files array
+        const updatedFiles = currentFolder.files.map((file) => {
+          if (file.name === fileName) {
+            return { ...file, content: newContent };
+          }
+          return file;
+        });
+
+        return {
+          ...currentFolder,
+          files: updatedFiles,
+        };
+      }
+
+      // If the currentFolder has sub-folders, apply the function recursively
+      if (currentFolder.folders && currentFolder.folders.length > 0) {
+        return {
+          ...currentFolder,
+          folders: currentFolder.folders.map((subFolder) =>
+            updateFileContentInFolder(subFolder, fileName, newContent)
+          ),
+        };
+      }
+
+      // If the currentFolder is not the target folder and has no sub-folders, return it unchanged
+      return currentFolder;
+    };
+
+    // Map over the userCollection to apply the updateFileContentInFolder function
+    console.log(userCollection, "userCollection,");
+    const updatedUserCollection = userCollection.collections.map(
+      (folder: CollectionFolder) =>
+        updateFileContentInFolder(folder, fileName, newContent)
+    );
+
+    console.log(updatedUserCollection, "updateUserCollection");
+    //If there's a parent folder, find it and update the content of the file
+    if (parentFolderName && parentFolderName !== "") {
+      const parentFolder = updatedUserCollection.find(
+        (folder: CollectionFolder) => folder.name === parentFolderName
+      );
+
+      console.log(parentFolder, "parentFolder");
+
+      if (parentFolder) {
+        const updatedParentFolder = updateFileContentInFolder(
+          parentFolder,
+          fileName,
+          newContent
+        );
+
+        // Update the userCollection with the modified parent folder
+        const index = updatedUserCollection.findIndex(
+          (folder: CollectionFolder) => folder.name === parentFolderName
+        );
+
+        if (index !== -1) {
+          updatedUserCollection[index] = updatedParentFolder;
+        }
+      }
+    }
+
+    dispatch(updateUserCollection({ value: updatedUserCollection }));
+  };
+
+export const updateFileContentAction =
+  (folderTitle: string, fileTitle: string, newContent: string) =>
+  (dispatch: any, getState: any) => {
+    const state = getState();
+    const { tabs, activeTab } = state.generalState;
+
+    if (activeTab !== null) {
+      const currentTab = tabs.find(
+        (tab: Tab) =>
+          tab.id === activeTab &&
+          tab.folderName === folderTitle &&
+          tab.title === fileTitle
+      );
+
+      if (currentTab) {
+        const key = currentTab.title;
+        const fileObj = currentTab.file[currentTab.title];
+        const Tab = {
+          ...currentTab,
+          file: { [key]: { ...fileObj, content: newContent } },
+        };
+        dispatch(updateTab(Tab));
+      }
+    }
+  };
+
+export const getCurrentEditorValueAndSaveAction =
+  (
+    FolderName: string,
+    FileName: string,
+    content: string,
+    fromSaveAction: boolean = false
+  ) =>
+  (dispatch: AppDispatch, getState: any) => {
+    console.log(FolderName, FileName, content, "FolderName,FileName,content");
+    dispatch(
+      updateFileContentUserCollectionAction(FolderName, FileName, content)
+    );
+    dispatch(updateFileContentAction(FolderName, FileName, content));
+
+    const state = getState();
+    const { userCollection, tabs, activeTab } = state.generalState;
+
+    localStorage.setItem("userCollection", JSON.stringify(userCollection));
+    localStorage.setItem("tabs", JSON.stringify(tabs));
+    if (activeTab) {
+      localStorage.setItem("activeTab", JSON.stringify(activeTab));
+    }
+
+    if (fromSaveAction) {
+      toast.success("File saved successfully!");
+    }
   };
 
 export const addFolderToFolderUserCollectionAction =
@@ -356,21 +511,31 @@ const UserCollection = {
   ],
 };
 
+//@ts-ignore
+const userCollectionFromStorage = localStorage.getItem("userCollection")
+  ? //@ts-ignore
+    JSON.parse(localStorage.getItem("userCollection"))
+  : UserCollection;
+
+//@ts-ignore
+const tabsFromStorage = localStorage.getItem("tabs")
+  ? //@ts-ignore
+    JSON.parse(localStorage.getItem("tabs"))
+  : [];
+
+//@ts-ignore
+const activeTabFromStorage = localStorage.getItem("activeTab")
+  ? //@ts-ignore
+    JSON.parse(localStorage.getItem("activeTab"))
+  : null;
 export const generalSlice = createSlice({
   name: "general",
   initialState: {
-    tabs: [
-      {
-        id: 1,
-        title: "untitled",
-        folderStructure: [] as Folder[],
-        file: undefined,
-      },
-    ],
+    tabs: tabsFromStorage,
     modalIsOpen: false,
-    activeTab: 1,
-    newFileName: "",
-    userCollection: UserCollection,
+    activeTab: null,
+    newFileName: activeTabFromStorage,
+    userCollection: userCollectionFromStorage,
     showOpenFile: false,
     actionType: ActionType.ADD_FILE,
     rootFolderName: "",
@@ -424,6 +589,13 @@ export const generalSlice = createSlice({
     setRootFolderName: (state, action: PayloadAction<{ value: string }>) => {
       state.rootFolderName = action.payload.value;
     },
+    updateUserCollection: (
+      state,
+      action: PayloadAction<{ value: CollectionFolder[] }>
+    ) => {
+      //console.log(action.payload.value, "action.payload.value");
+      state.userCollection.collections = action.payload.value;
+    },
   },
   // extraReducers: (builder) => {
   //   // Add extra reducers if needed
@@ -439,6 +611,7 @@ export const {
   setActionType,
   setShowOpenFile,
   setRootFolderName,
+  updateUserCollection,
 } = generalSlice.actions;
 
 export default generalSlice.reducer;

@@ -26,6 +26,10 @@ const SandBox: React.FC = () => {
 
   useEffect(() => {
     if (activeTab) {
+      console.log(
+        tabs.find((tab) => tab.id === activeTab),
+        "ActiveTabDetail"
+      );
       setActiveTabDetail(tabs.find((tab) => tab.id === activeTab));
     }
   }, [activeTab]);
@@ -51,6 +55,7 @@ const SandBox: React.FC = () => {
 
   //   console.log(`Code execution completed for tab: ${activeTab}`);
   // };
+  console.log(activeTabDetail, "Object.values");
 
   return (
     <div className="w-full">
@@ -87,8 +92,9 @@ const SandBox: React.FC = () => {
       <div className="flex items-stretch p-5">
         <div className="flex-1">
           <div className="w-full h-[100vh]">
-            {activeTabDetail && (
+            {activeTabDetail ? (
               <CodeEditor
+                folderName={activeTabDetail.folderName}
                 fileName={
                   Object.keys(activeTabDetail.file || {})[0] || "Untitled"
                 }
@@ -101,17 +107,18 @@ const SandBox: React.FC = () => {
                   "typescript"
                 }
               />
+            ) : (
+              <CodeEditor
+                folderName="project 1"
+                fileName="untitled"
+                isActive={true}
+                code=""
+                language="python"
+              />
             )}
           </div>
         </div>
         <div className="flex-1 bg-slate-400">
-          {" "}
-          <button
-            className="bg-blue-600 hover:bg-blue-400 p-1 mr-3 text-white rounded cursor-pointer"
-            // onClick={executeCode}
-          >
-            Save
-          </button>
           <button
             className="bg-blue-600 hover:bg-blue-400 p-1 text-white rounded cursor-pointer"
             // onClick={executeCode}
