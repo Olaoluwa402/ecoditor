@@ -42,13 +42,16 @@ class RecipesResource(Resource):
 
             if "error" in code_snippet:
                 print(f"Error executing code: {code_snippet['error']}")
-                return jsonify({"error": code_snippet["error"]}), 400
+                return {"error": code_snippet["error"]}, 400
             else:
                 print(f"Execution result: {code_snippet['result']}")
-                return code_snippet, 201
+                # Extract relevant information and return as JSON
+                result_data = {"result": code_snippet["result"]}
+                return jsonify(result_data), 201
         except Exception as e:
-            # print(f"Error executing code: {str(e)}")
-            return make_response(jsonify({"error": str(e)}), 500)
+            print(f"Error executing code: {str(e)}")
+            # Handle other exceptions and return as JSON
+            return {"error": str(e)}, 500
 
 
 def execute_user_code(code, language):
@@ -86,7 +89,12 @@ def execute_user_code(code, language):
             return {"result": result.stdout}
         else:
             return {"error": "Unsupported language"}
+        
     except subprocess.CalledProcessError as e:
+        # Handle subprocess errors more gracefully
+        return {"error": str(e)}
+    except Exception as e:
+        # Handle other exceptions
         return {"error": str(e)}
 
 
