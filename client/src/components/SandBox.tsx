@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import CodeEditor from "./CodeEditor";
-//import axios from "axios";
+import axios from "axios";
 import { useSelector } from "react-redux";
 import { RootState } from "../reduxToolKit/store";
 import { closeTab, openFileInEditor } from "../reduxToolKit/features/general";
@@ -19,11 +19,6 @@ const SandBox: React.FC = () => {
   const [output, setOutput] = useState<string | null>(null);
   const [activeTabDetail, setActiveTabDetail] = useState<Tab>();
 
-  let name = "js";
-  if (name === "py") {
-    setOutput(null);
-  }
-
   useEffect(() => {
     if (activeTab) {
       console.log(
@@ -34,27 +29,31 @@ const SandBox: React.FC = () => {
     }
   }, [activeTab]);
 
-  // const executeCode = async () => {
-  //   console.log(`Executing code for tab: ${activeTab}`);
+  const executeCode = async () => {
+    console.log(`Executing code for tab: ${activeTab}`);
+    const code = Object.values(activeTabDetail?.file || {})[0]?.content;
+    const language = Object.values(activeTabDetail?.file || {})[0]?.language;
+    try {
+      if (code && language) {
+        const response = await axios.post(
+          "http://127.0.0.1:5001/EditorCode/codes",
+          {
+            code: code,
+            language: language,
+          }
+        );
 
-  //   try {
-  //     // Make an API call to your Python server
-  //     const response = await axios.post(
-  //       "http://your-python-server/api/execute",
-  //       {
-  //         code: "code", // Pass the code to execute
-  //       }
-  //     );
+        // Handle the response from the server
+        console.log("Server Response:", response.data);
+        setOutput(response.data.result);
+      }
+    } catch (error: any) {
+      // Handle errors
+      console.error("Error executing code:", error);
+    }
 
-  //     // Handle the response from the server
-  //     console.log("Server Response:", response.data);
-  //   } catch (error: any) {
-  //     // Handle errors
-  //     console.error("Error executing code:", error.message);
-  //   }
-
-  //   console.log(`Code execution completed for tab: ${activeTab}`);
-  // };
+    console.log(`Code execution completed for tab: ${activeTab}`);
+  };
   console.log(activeTabDetail, "Object.values");
 
   return (
@@ -121,7 +120,7 @@ const SandBox: React.FC = () => {
         <div className="flex-1 bg-slate-400">
           <button
             className="bg-blue-600 hover:bg-blue-400 p-1 text-white rounded cursor-pointer"
-            // onClick={executeCode}
+            onClick={executeCode}
           >
             Execute Code
           </button>
