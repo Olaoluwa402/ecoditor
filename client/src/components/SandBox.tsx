@@ -29,7 +29,7 @@ const SandBox: React.FC = () => {
       );
       setActiveTabDetail(tabs.find((tab) => tab.id === activeTab));
     }
-  }, [activeTab]);
+  }, [activeTab, tabs]);
 
   const executeCode = async () => {
     console.log(`Executing code for tab: ${activeTab}`);
